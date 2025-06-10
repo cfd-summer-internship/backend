@@ -1,5 +1,5 @@
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Integer, PrimaryKeyConstraint, String, ForeignKey, Boolean
+from sqlalchemy import Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import declarative_base, relationship, Mapped,mapped_column
 from sqlalchemy import Enum as SqlEnum
 from enum import Enum
