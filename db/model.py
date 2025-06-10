@@ -33,15 +33,15 @@ class StudyConfiguration(Base):
     )
 
     #FK TO USER ID
-    researcher_id:Mapped[String]=mapped_column(
-        String,
-        ForeignKey(
-            "researcher.id",
-            ondelete="CASCADE",
-            onupdate="CASCADE",
-        ),
-        nullable=False
-    )
+    # researcher_id:Mapped[String]=mapped_column(
+    #     String,
+    #     ForeignKey(
+    #         "researcher.id",
+    #         ondelete="CASCADE",
+    #         onupdate="CASCADE",
+    #     ),
+    #     nullable=False
+    # )
 
     #REFERENCE TO LEARNING CONFIG
     learning_config:Mapped["LearningConfiguration"]=relationship(
@@ -197,9 +197,6 @@ class ExperimentConfiguration(Base):
 
 class DemographicSurvey(Base):
     __tablename__ ="survey_config"
-    __table_args__ = (
-        PrimaryKeyConstraint("study_config_id", "demographic_survey_id"),
-    )
 
     #SET UUID FOR ID
     id: Mapped[uuid.UUID] = mapped_column(
