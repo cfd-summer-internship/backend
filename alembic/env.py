@@ -1,20 +1,18 @@
 from logging.config import fileConfig
-import os
-from dotenv import load_dotenv
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
 from db.model import Base
+from settings import get_settings
 
-load_dotenv()
-
+settings = get_settings()
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-# Interpret the config file for Python logging.
+# Interpret the config fil e for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -42,16 +40,11 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    connection_string = os.getenv("CONNECTION_STRING")
-    if not connection_string:
-        raise RuntimeError("CONNECTION_STRING environment variable not found")
-    
-
-    config.set_main_option("sqlalchemy.url", connection_string)
+    config.set_main_option("sqlalchemy.url", settings.connection_string)
     
     # url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=connection_string,
+        url=settings.connection_string,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -68,12 +61,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connection_string = os.getenv("CONNECTION_STRING")
-    if not connection_string:
-        raise RuntimeError("CONNECTION_STRING environment variable not found")
-    
-
-    config.set_main_option("sqlalchemy.url", connection_string)
+    config.set_main_option("sqlalchemy.url", settings.connection_string)
     
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),

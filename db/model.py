@@ -44,8 +44,36 @@ class StudyConfiguration(Base):
     # )
 
     #REFERENCE TO LEARNING CONFIG
-    learning_config:Mapped["LearningConfiguration"]=relationship(
-        back_populates="study_config",
+    learning:Mapped["LearningConfiguration"]=relationship(
+        back_populates="study",
+        cascade="all, delete-orphan",
+        uselist=False
+    )
+
+    #REFERENCE TO LEARNING CONFIG
+    wait:Mapped["WaitingConfiguration"]=relationship(
+        back_populates="study",
+        cascade="all, delete-orphan",
+        uselist=False
+    )
+
+    #REFERENCE TO LEARNING CONFIG
+    experiment:Mapped["ExperimentConfiguration"]=relationship(
+        back_populates="study",
+        cascade="all, delete-orphan",
+        uselist=False
+    )
+
+    #REFERENCE TO LEARNING CONFIG
+    files:Mapped["UploadedFiles"]=relationship(
+        back_populates="study",
+        cascade="all, delete-orphan",
+        uselist=False
+    )
+
+    #REFERENCE TO LEARNING CONFIG
+    survey:Mapped["DemographicSurvey"]=relationship(
+        back_populates="study",
         cascade="all, delete-orphan",
         uselist=False
     )
@@ -84,6 +112,8 @@ class UploadedFiles(Base):
         nullable=False
     )
 
+    #REFERENCE TO STUDY CONFIG
+    study : Mapped[StudyConfiguration]=relationship(back_populates="files")
 
 #LEARNING PHASE CONFIG
 class LearningConfiguration(Base):
@@ -122,7 +152,7 @@ class LearningConfiguration(Base):
     )
 
     #REFERENCE TO STUDY CONFIG
-    study_config : Mapped[StudyConfiguration]=relationship(back_populates="study_config")
+    study : Mapped[StudyConfiguration]=relationship(back_populates="learning")
 
 class WaitingConfiguration(Base):
     __tablename__ ="wait_config"
@@ -145,7 +175,7 @@ class WaitingConfiguration(Base):
     )
 
     #REFERENCE TO STUDY CONFIG
-    study_config : Mapped[StudyConfiguration]=relationship(back_populates="study_config")
+    study : Mapped[StudyConfiguration]=relationship(back_populates="wait")
 
 #EXPIREMENT PHASE CONFIG
 class ExperimentConfiguration(Base):
@@ -193,7 +223,7 @@ class ExperimentConfiguration(Base):
     )
 
     #REFERENCE TO STUDY CONFIG
-    study_config : Mapped[StudyConfiguration]=relationship(back_populates="study_config")
+    study : Mapped[StudyConfiguration]=relationship(back_populates="experiment")
 
 class DemographicSurvey(Base):
     __tablename__ ="survey_config"
@@ -215,22 +245,25 @@ class DemographicSurvey(Base):
             onupdate="CASCADE"),
         unique=True
     )
-
-    question:Mapped[String] = mapped_column(
-        String,
-        nullable=False
-    )
-
-    answer:Mapped[String] = mapped_column(
-        String,
-        nullable=False
-    )
     
-    #REFERENCE TO STUDY CONFIG
-    study_config : Mapped[StudyConfiguration]=relationship(back_populates="study_config")
+    #BI-DIRECTIONAL REFERENCE TO STUDY CONFIG
+    study: Mapped[StudyConfiguration]=relationship(back_populates="survey")
+
+    #BI-DIRECTIONAL REFERENCE TO SUVERY QUESTIONS
+    questions:Mapped[list["SurveyQuestion"]]=relationship(back_populates="survey")
+
+    #BI-DIRECTIONAL REFERENCE TO SUVERY QUESTIONS
+    answers:Mapped[list["SurveyAnswer"]]=relationship(back_populates="survey")
 
 class SurveyQuestion (Base):
     __tablename__ ="survey_question"
+
+    id:Mapped[Integer]=mapped_column(
+        Integer,
+        nullable=False,
+        primary_key=True,
+        autoincrement=True
+    )
 
     #SURVEY ID (PK,FK)
     survey_config_id:Mapped[uuid.UUID] = mapped_column(
@@ -239,7 +272,6 @@ class SurveyQuestion (Base):
             "survey_config.id", 
             ondelete="CASCADE", 
             onupdate="CASCADE"),
-        primary_key=True,
         unique=True
     )
 
@@ -249,10 +281,17 @@ class SurveyQuestion (Base):
     )
 
     #REFERENCE TO STUDY CONFIG
-    study_config : Mapped[DemographicSurvey]=relationship(back_populates="survey_config")
+    survey : Mapped[DemographicSurvey]=relationship(back_populates="questions")
 
 class SurveyAnswer (Base):
     __tablename__ ="survey_answer"
+
+    id:Mapped[Integer]=mapped_column(
+        Integer,
+        nullable=False,
+        primary_key=True,
+        autoincrement=True
+    )
 
     #SURVEY ID (PK,FK)
     survey_config_id:Mapped[uuid.UUID] = mapped_column(
@@ -261,7 +300,7 @@ class SurveyAnswer (Base):
             "survey_config.id", 
             ondelete="CASCADE", 
             onupdate="CASCADE"),
-        primary_key=True
+            unique=True
     )
 
     text:Mapped[String] = mapped_column(
@@ -270,4 +309,4 @@ class SurveyAnswer (Base):
     )
 
     #REFERENCE TO STUDY CONFIG
-    study_config : Mapped[DemographicSurvey]=relationship(back_populates="survey_config")
+    survey : Mapped[DemographicSurvey]=relationship(back_populates="answers")
