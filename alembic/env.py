@@ -40,11 +40,11 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    config.set_main_option("sqlalchemy.url", settings.connection_string)
+    config.set_main_option("sqlalchemy.url", settings.model_string)
     
     # url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=settings.connection_string,
+        url=settings.model_string,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -61,7 +61,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    config.set_main_option("sqlalchemy.url", settings.connection_string)
+    config.set_main_option("sqlalchemy.url", settings.model_string)
     
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
