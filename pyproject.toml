@@ -22,3 +22,6 @@ dependencies = [
 dev = [
     "ruff>=0.11.12",
 ]
+
+[tool.ruff]
+extend-exclude = ["alembic/*"]
