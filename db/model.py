@@ -215,7 +215,7 @@ class ExperimentConfiguration(Base):
 
     #RESPONSE METHOD
     #Takes either BINARY or GRADIENT
-    display_method:Mapped[DisplayMethodEnum] = mapped_column(
+    response_method:Mapped[ResponseMethodEnum] = mapped_column(
         SqlEnum(ResponseMethodEnum,
                 name="response_method",
                 native_enum=False),
