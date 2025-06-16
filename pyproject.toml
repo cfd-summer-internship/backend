@@ -4,9 +4,24 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "alembic>=1.16.1",
+    "asyncpg>=0.30.0",
+    "fastapi[all]>=0.115.12",
+    "greenlet>=3.2.3",
+    "psycopg[binary]>=3.2.9",
+    "pydantic>=2.11.5",
+    "pydantic-settings>=2.9.1",
+    "python-dotenv>=1.1.0",
+    "sqlalchemy>=2.0.41",
+    "uuid>=1.30",
+    "uvicorn>=0.34.3",
+]
 
 [dependency-groups]
 dev = [
     "ruff>=0.11.12",
 ]
+
+[tool.ruff]
+extend-exclude = ["alembic/*"]
