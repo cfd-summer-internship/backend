@@ -1,9 +1,10 @@
 import uuid
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Form, UploadFile, File
 from pydantic import BaseModel, ConfigDict
 from db.client import get_db_session
 from db.study import add_study, get_study
 from sqlalchemy.ext.asyncio import AsyncSession
+from schemas.study_config_schema import LearningPhase, FileUploads
 
 
 class StudyConfig(BaseModel):
@@ -14,6 +15,35 @@ class StudyConfig(BaseModel):
 # ROUTER
 router = APIRouter(prefix="/config", tags=["Config"])
 
+def getLearningPhase(
+        displayDuration:int = Form(...,alias="learning.displayDuration"),
+        pauseDuration:int = Form(...,alias="learning.pauseDuration"),
+        displayMethod:str = Form(...,alias="learning.displayMethod")
+):
+    return LearningPhase(
+        display_duration=displayDuration,
+        pause_duration=pauseDuration,
+        display_method=displayMethod
+    )
+
+def getFileUploads(
+        consentForm:UploadFile = File(...,alias="configFiles.consentForm"),
+        studyInstructions:UploadFile = File(...,alias="configFiles.studyInstructions")
+):
+    return FileUploads(
+        consent_form=consentForm,
+        study_instructions=studyInstructions
+    )
+
+
+@router.post("/save")
+async def save_configuration(
+    learning:LearningPhase = Depends(getLearningPhase),
+    files:FileUploads = Depends(getFileUploads)
+    ):
+    if learning and files:
+        return {"message":"Configuration Succesfully Submitted"}
+
 
 @router.post("/add", response_model=None)
 async def add_configuration(
@@ -21,9 +51,10 @@ async def add_configuration(
 ):
     await add_study(study=study, conn=conn)
 
+
 @router.get("/retrieve", response_model=StudyConfig)
 async def get_configuration(
-    id:uuid.UUID, conn: AsyncSession = Depends(get_db_session)
+    id: uuid.UUID, conn: AsyncSession = Depends(get_db_session)
 ):
     study = await get_study(id=id, conn=conn)
     return study
