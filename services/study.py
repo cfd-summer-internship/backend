@@ -54,7 +54,7 @@ async def save_configuration(
 
 """
 Example APIs to show how to insert and retrieve data from
-the database using the corresponding connection method
+the database using the established connection method
 """
 @router.post("/add", response_model=None)
 async def add_configuration(
