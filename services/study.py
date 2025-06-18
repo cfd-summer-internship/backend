@@ -15,8 +15,13 @@ class StudyConfig(BaseModel):
 # ROUTER
 router = APIRouter(prefix="/config", tags=["Config"])
 
+"""
+Helper Functions to map incoming multipart/form-data
+into their corresponding pydantic models.
+This will help with database insertion and type enforcement.
+"""
 def getLearningPhase(
-        displayDuration:int = Form(...,alias="learning.displayDuration"),
+        displayDuration:int = Form(...,alias="learning.displayDuration"), #(...)
         pauseDuration:int = Form(...,alias="learning.pauseDuration"),
         displayMethod:str = Form(...,alias="learning.displayMethod")
 ):
@@ -35,7 +40,10 @@ def getFileUploads(
         study_instructions=studyInstructions
     )
 
-
+"""
+Test API to show how to take in the multipart/form-data
+Can then be dissemenated into database
+"""
 @router.post("/save")
 async def save_configuration(
     learning:LearningPhase = Depends(getLearningPhase),
@@ -44,7 +52,10 @@ async def save_configuration(
     if learning and files:
         return {"message":"Configuration Succesfully Submitted"}
 
-
+"""
+Example APIs to show how to insert and retrieve data from
+the database using the corresponding connection method
+"""
 @router.post("/add", response_model=None)
 async def add_configuration(
     study: StudyConfig, conn: AsyncSession = Depends(get_db_session)

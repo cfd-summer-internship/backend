@@ -1,6 +1,12 @@
 from fastapi import UploadFile
 from pydantic import BaseModel
-
+"""
+These models help with type enforcement
+and structure the incoming data
+to match the database data types
+and columns for each corresponding
+table.
+"""
 class LearningPhase(BaseModel):
     display_duration:int
     pause_duration:int
