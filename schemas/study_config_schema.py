@@ -1,5 +1,5 @@
 from fastapi import UploadFile
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 """
 These models help with type enforcement
 and structure the incoming data
@@ -21,3 +21,7 @@ class ExperimentPhase(LearningPhase):
 class FileUploads(BaseModel):
     consent_form:UploadFile
     study_instructions:UploadFile
+
+class StudyConfig(BaseModel):
+    show_results: bool
+    model_config = ConfigDict(from_attributes=True)

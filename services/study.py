@@ -1,15 +1,9 @@
 import uuid
 from fastapi import APIRouter, Depends, Form, UploadFile, File
-from pydantic import BaseModel, ConfigDict
 from db.client import get_db_session
 from db.study import add_study, get_study
 from sqlalchemy.ext.asyncio import AsyncSession
-from schemas.study_config_schema import LearningPhase, FileUploads
-
-
-class StudyConfig(BaseModel):
-    show_results: bool
-    model_config = ConfigDict(from_attributes=True)
+from schemas.study_config_schema import LearningPhase, FileUploads, StudyConfig
 
 
 # ROUTER
