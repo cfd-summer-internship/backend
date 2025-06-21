@@ -1,7 +1,7 @@
 import uuid
 from fastapi import APIRouter, Depends, Form, UploadFile, File
 from db.client import get_db_session
-from db.study import add_study, get_study
+from services.study_config_service import add_study, get_study, getLearningPhase, getFileUploads
 from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.study_config_schema import LearningPhase, FileUploads, StudyConfig
 
@@ -9,30 +9,8 @@ from schemas.study_config_schema import LearningPhase, FileUploads, StudyConfig
 # ROUTER
 router = APIRouter(prefix="/config", tags=["Config"])
 
-"""
-Helper Functions to map incoming multipart/form-data
-into their corresponding pydantic models.
-This will help with database insertion and type enforcement.
-"""
-def getLearningPhase(
-        displayDuration:int = Form(...,alias="learning.displayDuration"), #(...)
-        pauseDuration:int = Form(...,alias="learning.pauseDuration"),
-        displayMethod:str = Form(...,alias="learning.displayMethod")
-):
-    return LearningPhase(
-        display_duration=displayDuration,
-        pause_duration=pauseDuration,
-        display_method=displayMethod
-    )
 
-def getFileUploads(
-        consentForm:UploadFile = File(...,alias="configFiles.consentForm"),
-        studyInstructions:UploadFile = File(...,alias="configFiles.studyInstructions")
-):
-    return FileUploads(
-        consent_form=consentForm,
-        study_instructions=studyInstructions
-    )
+
 
 """
 Test API to show how to take in the multipart/form-data
