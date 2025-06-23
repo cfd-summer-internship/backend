@@ -44,7 +44,7 @@ jobs:
       - name: Check Alembic Migrations
         env:
           MODEL_STRING: postgresql+psycopg://testuser:testpassword@localhost:5432/testdb
-        run: alembic upgrade head
+        run: uv venv exec alembic upgrade head
           
         
         
