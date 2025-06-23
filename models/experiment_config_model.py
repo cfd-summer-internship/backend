@@ -3,9 +3,9 @@ import uuid
 from sqlalchemy import Integer, Enum as SqlEnum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
-from .enums import DisplayMethodEnum, ResponseMethodEnum
-from .study_config_model import StudyConfiguration
+from .base_model import Base
+from enums import DisplayMethodEnum, ResponseMethodEnum
+from study_config_model import StudyConfiguration
 
 
 #EXPIREMENT PHASE CONFIG

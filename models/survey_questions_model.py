@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy import Integer, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
+from .base_model import Base
 from .demographics_survey_model import DemographicSurvey
 
 
