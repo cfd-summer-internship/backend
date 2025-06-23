@@ -1,0 +1,50 @@
+on:
+  push:
+    branches:
+        - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    branches:
+      - 'main'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        ports: [5432:5432]
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install UV
+        run: |
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install Dependencies
+        run: uv sync
+
+      - name: Check Alembic Migrations
+        env:
+          MODEL_STRING: postgresql+psycopg://testuser:testpassword@localhost:5432/testdb
+        run: alembic upgrade head
+          
+        
+        
