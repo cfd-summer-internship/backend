@@ -1,10 +1,11 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
+from base import Base
 import uuid
-
-from .study_config_model import StudyConfiguration
+from study_config_model import StudyConfiguration
+from survey_answers_model import SurveyAnswer
+from survey_questions_model import SurveyQuestion
 
 
 class DemographicSurvey(Base):

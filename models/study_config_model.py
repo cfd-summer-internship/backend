@@ -2,8 +2,12 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import uuid
-from .base import Base
-
+from base import Base
+from models.demographics_survey_model import DemographicSurvey
+from models.experiment_config_model import ExperimentConfiguration
+from models.learning_config_model import LearningConfiguration
+from models.uploaded_files_model import UploadedFiles
+from models.waiting_config_model import WaitingConfiguration
 
 
 class StudyConfiguration(Base):

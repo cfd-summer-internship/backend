@@ -1,8 +1,11 @@
-from sqlalchemy import Integer, Enum as SqlEnum
+from sqlalchemy import Integer, Enum as SqlEnum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
-from .enums import DisplayMethodEnum
+import uuid
+from base import Base
+from enums import DisplayMethodEnum
+from models.study_config_model import StudyConfiguration
+
 
 #LEARNING PHASE CONFIG
 class LearningConfiguration(Base):
