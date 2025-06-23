@@ -46,7 +46,7 @@ jobs:
         env:
           POSTGRES_HOST: localhost
           POSTGRES_USER: testuser
-          POSTGRES_DB: testdb
+          POSTGRES_DATABASE: testdb
           CONNECTION_STRING: postgresql+asyncpg//testuser:testpassword@localhost:5432/testdb
           MODEL_STRING: postgresql+psycopg://testuser:testpassword@localhost:5432/testdb
         run: ./.venv/bin/alembic upgrade head
