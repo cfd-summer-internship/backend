@@ -3,6 +3,14 @@ from sqlalchemy import Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import uuid
 from models.base_model import Base
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.learning_config_model import LearningConfiguration
+    from models.waiting_config_model import WaitingConfiguration
+    from models.experiment_config_model import ExperimentConfiguration
+    from models.uploaded_files_model import UploadedFiles
+    from models.demographics_survey_model import DemographicSurvey
 
 
 class StudyConfiguration(Base):
