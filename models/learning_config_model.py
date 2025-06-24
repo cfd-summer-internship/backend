@@ -3,7 +3,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import uuid
 from models.base_model import Base
-from enums import DisplayMethodEnum
+from .enums import DisplayMethodEnum
 from models.study_config_model import StudyConfiguration
 
 

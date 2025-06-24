@@ -1,36 +1,35 @@
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Integer, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base_model import Base
-from .demographics_survey_model import DemographicSurvey
+
+from base_model import Base
+
+if TYPE_CHECKING:
+    from demographics_survey_model import DemographicSurvey
 
 
-class SurveyAnswer (Base):
-    __tablename__ ="survey_answer"
+class SurveyAnswer(Base):
+    __tablename__ = "survey_answer"
 
-    id:Mapped[Integer]=mapped_column(
+    id: Mapped[int] = mapped_column(
         Integer,
-        nullable=False,
         primary_key=True,
-        autoincrement=True
+        autoincrement=True,
+        nullable=False
     )
 
-    #SURVEY ID (PK,FK)
-    survey_config_id:Mapped[uuid.UUID] = mapped_column(
+    survey_config_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey(
-            "survey_config.id",
-            ondelete="CASCADE",
-            onupdate="CASCADE"),
-            unique=True
+        ForeignKey("survey_config.id", ondelete="CASCADE", onupdate="CASCADE"),
+        unique=True
     )
 
-    text:Mapped[String] = mapped_column(
+    text: Mapped[str] = mapped_column(
         String,
         nullable=False
     )
 
-    #REFERENCE TO STUDY CONFIG
-    survey : Mapped[DemographicSurvey]=relationship(back_populates="answers")
+    survey: Mapped["DemographicSurvey"] = relationship(back_populates="answers")

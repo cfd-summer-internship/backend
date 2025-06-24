@@ -1,17 +1,20 @@
+import uuid
+from typing import TYPE_CHECKING
+
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from models.base_model import Base
-import uuid
 from models.study_config_model import StudyConfiguration
-from models.survey_answers_model import SurveyAnswer
-from models.survey_questions_model import SurveyQuestion
+
+if TYPE_CHECKING:
+    from models.survey_answers_model import SurveyAnswer
+    from models.survey_questions_model import SurveyQuestion
 
 
 class DemographicSurvey(Base):
     __tablename__ = "survey_config"
 
-    # SET UUID FOR ID
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
@@ -19,21 +22,14 @@ class DemographicSurvey(Base):
         unique=True
     )
 
-    # STUDY CONFIG ID (FK)
     study_config_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey(
-            "study_config.id",
-            ondelete="CASCADE",
-            onupdate="CASCADE"),
+        ForeignKey("study_config.id", ondelete="CASCADE", onupdate="CASCADE"),
         unique=True
     )
 
-    # BI-DIRECTIONAL REFERENCE TO STUDY CONFIG
     study: Mapped[StudyConfiguration] = relationship(back_populates="survey")
 
-    # BI-DIRECTIONAL REFERENCE TO SUVERY QUESTIONS
     questions: Mapped[list["SurveyQuestion"]] = relationship(back_populates="survey")
 
-    # BI-DIRECTIONAL REFERENCE TO SUVERY QUESTIONS
     answers: Mapped[list["SurveyAnswer"]] = relationship(back_populates="survey")

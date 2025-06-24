@@ -32,7 +32,7 @@ the database using the established connection method
 async def add_configuration(
     study: StudyConfig, conn: AsyncSession = Depends(get_db_session)
 ):
-    await add_study(study=study, conn=conn)
+    await add_study(config=study, conn=conn)
 
 
 @router.get("/retrieve", response_model=StudyConfig)
