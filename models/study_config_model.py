@@ -23,7 +23,7 @@ class StudyConfiguration(Base):
         unique=True
     )
 
-    show_results: Mapped[Boolean] = mapped_column(
+    show_results: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False
     )

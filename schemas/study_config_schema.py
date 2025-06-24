@@ -1,5 +1,8 @@
 from fastapi import UploadFile
 from pydantic import BaseModel, ConfigDict
+
+from models.enums import DisplayMethodEnum, ResponseMethodEnum
+
 """
 These models help with type enforcement
 and structure the incoming data
@@ -10,13 +13,13 @@ table.
 class LearningPhase(BaseModel):
     display_duration:int
     pause_duration:int
-    display_method:str
+    display_method:DisplayMethodEnum
 
 class WaitPhase(BaseModel):
     wait_phase:int
 
 class ExperimentPhase(LearningPhase):
-    answer_method:str
+    response_method:ResponseMethodEnum
 
 class ConclusionPhase(BaseModel):
     show_results:bool
