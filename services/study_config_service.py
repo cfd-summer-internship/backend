@@ -3,7 +3,9 @@ from sqlalchemy import select  # , joinedload,selectinload
 from models import study_config_model as StudyConfiguration
 from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.study_config_schema import StudyConfig, LearningPhase, FileUploads
-from fastapi import  Form, UploadFile, File
+from fastapi import Form, UploadFile, File
+from sqlalchemy.orm import selectinload
+from models.study_config_model import StudyConfiguration
 
 
 """
@@ -15,20 +17,32 @@ Example async methods to show how to interact
 with the database using SQLAlchemy
 """
 
-#SELECT
+
+# SELECT
 async def get_study(id: uuid.UUID, conn: AsyncSession):
-    stmt = select(StudyConfiguration).where(StudyConfiguration.id == id)
+    stmt = (
+        select(StudyConfiguration)
+        .options(
+            selectinload(StudyConfiguration.learning),
+            selectinload(StudyConfiguration.wait),
+            selectinload(StudyConfiguration.experiment),
+            selectinload(StudyConfiguration.survey),
+            selectinload(StudyConfiguration.files)
+    )
+    .where(StudyConfiguration.id == id)
+    )
     result = await conn.execute(stmt)
     study = result.scalars().first()
-    return StudyConfig.model_validate(study)
+    if study:
+        return StudyConfig(study)
+    return None
 
-#INSERT
+# INSERT
 async def add_study(study: StudyConfig, conn: AsyncSession):
     _study = StudyConfiguration(show_results=study.show_results)
-    # INSERT
     conn.add(_study)
-    # COMMIT CHANGE
     await conn.commit()
+
 
 def getLearningPhase(
         displayDuration:int = Form(...,alias="learning.displayDuration"), #(...)

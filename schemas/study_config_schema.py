@@ -18,23 +18,10 @@ class WaitPhase(BaseModel):
 class ExperimentPhase(LearningPhase):
     answer_method:str
 
-class ConclusionPhase(BaseModel):
-    show_results:bool
-    debrief_file:UploadFile
-    has_survey:bool
-
 class FileUploads(BaseModel):
     consent_form:UploadFile
     study_instructions:UploadFile
-    learning_phase_list:UploadFile
-    experiment_phase_list:UploadFile
 
 class StudyConfig(BaseModel):
-    file_uploads: FileUploads
-    learning_phase: LearningPhase
-    wait_phase: WaitPhase
-    experiment_phase: ExperimentPhase
-    conclusion_phase: ConclusionPhase
+    show_results: bool
     model_config = ConfigDict(from_attributes=True)
-
-
