@@ -1,5 +1,9 @@
-#Git Blame Ignore for Refactor
-1414343 Restructured code (Refactor)
-ba7940b Fixed Import errors (Refactor)
-6e0ea15 Fixed circular imports (Refactor)
-e439623 Fixed circular imports and added type_checking for ruff (Refactor)
+# .git-blame-ignore-revs
+# Restructured code (Refactor)
+1414343486f1c97d2f744b6258f957cd2893a53a
+# Fixed Import errors (Refactor)
+ba7940b1f991327efde60a427f6a0ad42fbf0733
+# Fixed circular imports (Refactor)
+6e0ea154d22563e2e1caa405d4caec0304af2fb2
+# Fixed circular imports and added type_checking for ruff (Refactor)
+e4396235771ce2d73fe6f52c445e98ed440c6d1d
