@@ -41,10 +41,8 @@ class UploadedFiles(Base):
         nullable=False
     )
 
-    debrief:Mapped[str] = mapped_column(
-        String,
-        nullable=False
-    )
+    debrief: Mapped[str | None] = mapped_column(String, nullable=True)
+
 
     #REFERENCE TO STUDY CONFIG
     study : Mapped[StudyConfiguration]=relationship(back_populates="files")

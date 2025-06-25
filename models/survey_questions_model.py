@@ -3,33 +3,27 @@ from sqlalchemy import Integer, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base_model import Base
-from .demographics_survey_model import DemographicSurvey
 
+class SurveyQuestion(Base):
+    __tablename__ = "survey_question"
 
-class SurveyQuestion (Base):
-    __tablename__ ="survey_question"
-
-    id:Mapped[Integer]=mapped_column(
+    id: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
         primary_key=True,
         autoincrement=True
     )
 
-    #SURVEY ID (PK,FK)
-    survey_config_id:Mapped[uuid.UUID] = mapped_column(
+    survey_config_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey(
-            "survey_config.id",
-            ondelete="CASCADE",
-            onupdate="CASCADE"),
+        ForeignKey("survey_config.id", ondelete="CASCADE", onupdate="CASCADE"),
         unique=True
     )
 
-    text:Mapped[String] = mapped_column(
+    text: Mapped[str] = mapped_column(
         String,
         nullable=False
     )
 
-    #REFERENCE TO STUDY CONFIG
-    survey : Mapped[DemographicSurvey]=relationship(back_populates="questions")
+    # ✅ No import — just a string reference
+    survey: Mapped["DemographicSurvey"] = relationship("DemographicSurvey", back_populates="questions")

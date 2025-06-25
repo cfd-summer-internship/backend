@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import select, update  # , joinedload
+from sqlalchemy import select, update  # , joinedload,selectinload
 from sqlalchemy.orm import selectinload
 
 from models.enums import DisplayMethodEnum, ResponseMethodEnum
@@ -13,9 +13,7 @@ from models.uploaded_files_model import UploadedFiles
 from models.waiting_config_model import WaitingConfiguration
 from schemas.study_config_schema import StudyConfig, LearningPhase, FileUploads, WaitPhase, ExperimentPhase, \
     ConclusionPhase
-from fastapi import Form, UploadFile, File
-
-
+from fastapi import Form, UploadFile, File, Depends
 
 """
 Helper Functions to map incoming multipart/form-data
@@ -41,9 +39,7 @@ async def get_study(id: uuid.UUID, conn: AsyncSession):
     )
     result = await conn.execute(stmt)
     study = result.scalars().first()
-    if study:
-        return StudyConfig(study)
-    return None
+    return StudyConfig.model_validate(study)
 
 #INSERT
 async def add_study(config: StudyConfig, conn: AsyncSession):
@@ -111,11 +107,8 @@ async def save_conclusion_phase(study_id, data: ConclusionPhase, conn):
         .values(debrief=data.debrief_file.filename)
     )
 
-    # Save debrief file name in uploaded files (if applicable)
-    conn.add(UploadedFiles(
-        study_config_id=study_id,
-        debrief=data.debrief.filename
-    ))
+
+
 
 
 async def save_file_uploads(study_id, files: FileUploads, conn):
@@ -187,3 +180,19 @@ def getFileUploads(
         learning_phase_list=learningList,
         experiment_phase_list=experimentList
     )
+
+def parse_study_form(
+    learning: LearningPhase = Depends(getLearningPhase),
+    waiting: WaitPhase = Depends(getWaitPhase),
+    experiment: ExperimentPhase = Depends(getExperimentPhase),
+    conclusion: ConclusionPhase = Depends(getConclusionPhase),
+    files: FileUploads = Depends(getFileUploads)
+) -> StudyConfig:
+    return StudyConfig(
+        learning_phase=learning,
+        wait_phase=waiting,
+        experiment_phase=experiment,
+        conclusion_phase=conclusion,
+        file_uploads=files
+    )
+
