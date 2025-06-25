@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from db.client import get_db_session
 from services.study_config_service import add_study, get_study, getLearningPhase, getFileUploads
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -40,4 +40,6 @@ async def get_configuration(
     id: uuid.UUID, conn: AsyncSession = Depends(get_db_session)
 ):
     study = await get_study(id=id, conn=conn)
+    if not study:
+        raise HTTPException(status_code=404, detail="Study Configuration Not Found!")
     return study

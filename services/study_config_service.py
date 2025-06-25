@@ -1,5 +1,6 @@
 import uuid
-from sqlalchemy import select, update  # , joinedload,selectinload
+from sqlalchemy import select, update  # , joinedload
+from sqlalchemy.orm import selectinload
 
 from models.enums import DisplayMethodEnum, ResponseMethodEnum
 from models.study_config_model import StudyConfiguration
@@ -12,7 +13,8 @@ from models.uploaded_files_model import UploadedFiles
 from models.waiting_config_model import WaitingConfiguration
 from schemas.study_config_schema import StudyConfig, LearningPhase, FileUploads, WaitPhase, ExperimentPhase, \
     ConclusionPhase
-from fastapi import  Form, UploadFile, File
+from fastapi import Form, UploadFile, File
+
 
 
 """
@@ -26,10 +28,22 @@ with the database using SQLAlchemy
 
 #SELECT
 async def get_study(id: uuid.UUID, conn: AsyncSession):
-    stmt = select(StudyConfiguration).where(StudyConfiguration.id == id)
+    stmt = (
+        select(StudyConfiguration)
+        .options(
+            selectinload(StudyConfiguration.learning),
+            selectinload(StudyConfiguration.wait),
+            selectinload(StudyConfiguration.experiment),
+            selectinload(StudyConfiguration.survey),
+            selectinload(StudyConfiguration.files)
+    )
+    .where(StudyConfiguration.id == id)
+    )
     result = await conn.execute(stmt)
     study = result.scalars().first()
-    return StudyConfig.model_validate(study)
+    if study:
+        return StudyConfig(study)
+    return None
 
 #INSERT
 async def add_study(config: StudyConfig, conn: AsyncSession):
