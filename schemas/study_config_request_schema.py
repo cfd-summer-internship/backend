@@ -12,37 +12,38 @@ table.
 """
 
 
-class LearningPhase(BaseModel):
+class LearningPhaseRequest(BaseModel):
     display_duration: int
     pause_duration: int
     display_method: DisplayMethodEnum
 
 
-class WaitPhase(BaseModel):
+class WaitPhaseRequest(BaseModel):
     display_duration: int
 
 
-class ExperimentPhase(LearningPhase):
+class ExperimentPhaseRequest(LearningPhaseRequest):
     response_method: ResponseMethodEnum
 
 
-class ConclusionPhase(BaseModel):
+class ConclusionPhaseRequest(BaseModel):
     show_results: bool
     debrief_file: UploadFile
     has_survey: bool
 
 
-class FileUploads(BaseModel):
+class FileUploadsRequest(BaseModel):
     consent_form: UploadFile
     study_instructions: UploadFile
     learning_phase_list: UploadFile
     experiment_phase_list: UploadFile
 
 
-class StudyConfig(BaseModel):
-    file_uploads: FileUploads
-    learning_phase: LearningPhase
-    wait_phase: WaitPhase
-    experiment_phase: ExperimentPhase
-    conclusion_phase: ConclusionPhase
+class StudyConfigRequest(BaseModel):
+    files: FileUploadsRequest
+    learning: LearningPhaseRequest
+    wait: WaitPhaseRequest
+    experiment: ExperimentPhaseRequest
+    survey: ConclusionPhaseRequest  # or 'survey' if you're storing demographic survey
+
     model_config = ConfigDict(from_attributes=True)
