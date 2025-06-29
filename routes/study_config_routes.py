@@ -5,8 +5,10 @@ from schemas.study_config_response_schema import StudyConfigResponse
 from services.study_config_service import add_study, get_study, getLearningPhase, getFileUploads, \
     getWaitPhase, getConclusionPhase, getExperimentPhase
 from sqlalchemy.ext.asyncio import AsyncSession
-from schemas.study_config_request_schema import LearningPhaseRequest, FileUploadsRequest, WaitPhaseRequest, ExperimentPhaseRequest, \
-    ConclusionPhaseRequest
+from schemas.study_config_request_schema import LearningPhaseRequest, FileUploadsRequest, WaitPhaseRequest, \
+    ExperimentPhaseRequest, \
+    ConclusionPhaseRequest, StudyConfigRequest
+
 
 # ROUTER
 router = APIRouter(prefix="/config", tags=["Config"])
@@ -31,7 +33,6 @@ APIs to insert and retrieve data from
 the database using the established connection method
 """
 
-from schemas.study_config_request_schema import StudyConfigRequest
 
 
 @router.post("/add")
@@ -57,7 +58,7 @@ async def add_configuration(
 
 @router.get("/retrieve/{study_id}", response_model=StudyConfigResponse)
 async def get_configuration(
-    study_id: uuid.UUID,
-    conn: AsyncSession = Depends(get_db_session),
+        study_id: uuid.UUID,
+        conn: AsyncSession = Depends(get_db_session),
 ):
     return await get_study(study_id=study_id, conn=conn)

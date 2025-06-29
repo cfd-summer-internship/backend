@@ -14,7 +14,7 @@ from models.uploaded_files_model import UploadedFiles
 from models.waiting_config_model import WaitingConfiguration
 from schemas.study_config_request_schema import StudyConfigRequest, LearningPhaseRequest, FileUploadsRequest, WaitPhaseRequest, ExperimentPhaseRequest, \
     ConclusionPhaseRequest
-from fastapi import Form, UploadFile, File, Depends, HTTPException
+from fastapi import Form, UploadFile, File, HTTPException
 
 from schemas.study_config_response_schema import StudyConfigResponse, FileUploads, LearningPhase, WaitPhase, \
     ExperimentPhase, ConclusionPhase
