@@ -3,6 +3,13 @@ from sqlalchemy import Integer, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base_model import Base
+from typing import TYPE_CHECKING
+
+#That tells linters and type checkers:
+# “Only import this when doing static analysis (e.g., by Ruff or MyPy), not at runtime.”
+
+if TYPE_CHECKING:
+    from demographics_survey_model import DemographicSurvey
 
 class SurveyQuestion(Base):
     __tablename__ = "survey_question"
