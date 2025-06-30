@@ -3,7 +3,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import uuid
 from models.base_model import Base
-from enums import DisplayMethodEnum
+from .enums import DisplayMethodEnum
 from models.study_config_model import StudyConfiguration
 
 
@@ -23,13 +23,13 @@ class LearningConfiguration(Base):
     )
 
     #DISPLAY DURATION
-    display_duration:Mapped[Integer]= mapped_column(
+    display_duration:Mapped[int]= mapped_column(
         Integer,
         nullable=False
     )
 
     #PAUSE DURATION
-    pause_duration:Mapped[Integer] = mapped_column(
+    pause_duration:Mapped[int] = mapped_column(
         Integer,
         nullable=False
     )

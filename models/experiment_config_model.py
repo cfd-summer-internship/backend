@@ -4,8 +4,8 @@ from sqlalchemy import Integer, Enum as SqlEnum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base_model import Base
-from enums import DisplayMethodEnum, ResponseMethodEnum
-from study_config_model import StudyConfiguration
+from .enums import DisplayMethodEnum, ResponseMethodEnum
+from .study_config_model import StudyConfiguration
 
 
 #EXPIREMENT PHASE CONFIG
@@ -24,13 +24,13 @@ class ExperimentConfiguration(Base):
     )
 
     #DISPLAY DURATION
-    display_duration:Mapped[Integer]= mapped_column(
+    display_duration:Mapped[int]= mapped_column(
         Integer,
         nullable=False
     )
 
     #PAUSE DURATION
-    pause_duration:Mapped[Integer] = mapped_column(
+    pause_duration:Mapped[int] = mapped_column(
         Integer,
         nullable=False
     )

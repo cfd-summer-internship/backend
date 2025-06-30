@@ -1,10 +1,10 @@
 from fastapi import FastAPI
-from routers.study_config_routes import router as ConfigRouter
+from routes.study_config_routes import router as ConfigRouter
 import uvicorn as uv
 
-#Initialize FastAPI App
+# Initialize FastAPI App
 app = FastAPI()
-#Connect Router
+# Connect Router
 app.include_router(ConfigRouter)
 
 @app.get("/")
