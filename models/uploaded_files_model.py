@@ -21,25 +21,28 @@ class UploadedFiles(Base):
         unique=True
     )
 
-    consent_form:Mapped[String] = mapped_column(
+    consent_form:Mapped[str] = mapped_column(
         String,
         nullable=False
     )
 
-    image_list:Mapped[String] = mapped_column(
+    learning_image_list:Mapped[str] = mapped_column(
         String,
         nullable=False
     )
 
-    instruction_set:Mapped[String] = mapped_column(
+    experiment_image_list:Mapped[str] = mapped_column(
         String,
         nullable=False
     )
 
-    debrief:Mapped[String] = mapped_column(
+    instruction_set:Mapped[str] = mapped_column(
         String,
         nullable=False
     )
+
+    debrief: Mapped[str | None] = mapped_column(String, nullable=True)
+
 
     #REFERENCE TO STUDY CONFIG
     study : Mapped[StudyConfiguration]=relationship(back_populates="files")

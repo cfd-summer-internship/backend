@@ -22,7 +22,7 @@ class WaitingConfiguration(Base):
     )
 
     #DISPLAY DURATION
-    display_duration:Mapped[Integer]= mapped_column(
+    display_duration:Mapped[int]= mapped_column(
         Integer,
         nullable=False
     )
