@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from models.waiting_config_model import WaitingConfiguration
     from models.experiment_config_model import ExperimentConfiguration
     from models.uploaded_files_model import UploadedFiles
-    from models.demographics_survey_model import DemographicSurvey
+    from models.survey_model_config import DemographicSurvey
     from models.conclusion_config_model import ConclusionConfiguration
 
 

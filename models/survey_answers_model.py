@@ -9,7 +9,7 @@ from .base_model import Base
 # “Only import this when doing static analysis (e.g., by Ruff or MyPy), not at runtime.”
 
 if TYPE_CHECKING:
-    from demographics_survey_model import DemographicSurvey
+    from models.survey_model_config import DemographicSurvey
 
 class SurveyAnswer(Base):
     __tablename__ = "survey_answer"
@@ -32,4 +32,4 @@ class SurveyAnswer(Base):
         nullable=False
     )
 
-    survey: Mapped["DemographicSurvey"] = relationship("DemographicSurvey", back_populates="answers")
+    survey: Mapped["DemographicSurvey"] = relationship(back_populates="answers")

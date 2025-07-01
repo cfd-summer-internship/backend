@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 # “Only import this when doing static analysis (e.g., by Ruff or MyPy), not at runtime.”
 
 if TYPE_CHECKING:
-    from demographics_survey_model import DemographicSurvey
+    from models.survey_model_config import DemographicSurvey
 
 class SurveyQuestion(Base):
     __tablename__ = "survey_question"
@@ -32,4 +32,4 @@ class SurveyQuestion(Base):
         nullable=False
     )
 
-    survey: Mapped["DemographicSurvey"] = relationship("DemographicSurvey", back_populates="questions")
+    survey: Mapped["DemographicSurvey"] = relationship(back_populates="questions")

@@ -3,9 +3,12 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from models.base_model import Base
-from models.study_config_model import StudyConfiguration
-from models.survey_answers_model import SurveyAnswer
-from models.survey_questions_model import SurveyQuestion
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.study_config_model import StudyConfiguration
+    from models.survey_answers_model import SurveyAnswer
+    from models.survey_questions_model import SurveyQuestion
 
 
 class DemographicSurvey(Base):
@@ -24,6 +27,6 @@ class DemographicSurvey(Base):
         unique=True
     )
 
-    study: Mapped[StudyConfiguration] = relationship(back_populates="survey")
-    questions: Mapped[list[SurveyQuestion]] = relationship(back_populates="survey")
-    answers: Mapped[list[SurveyAnswer]] = relationship(back_populates="survey")
+    study: Mapped["StudyConfiguration"] = relationship(back_populates="survey")
+    questions: Mapped[list["SurveyQuestion"]] = relationship(back_populates="survey")
+    answers: Mapped[list["SurveyAnswer"]] = relationship(back_populates="survey")

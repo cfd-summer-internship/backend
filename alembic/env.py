@@ -24,9 +24,8 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 target_metadata = Base.metadata
 #target_metadata = None
-
-print("Registered ORM classes:")
-print(list(registry()._class_registry.keys()))
+print("Models registered in ORM:")
+print(list(Base.registry._class_registry.keys()))
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
