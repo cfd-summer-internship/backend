@@ -1,23 +1,20 @@
 import uuid
 
-from sqlalchemy import select, update  # , joinedload,selectinload
+from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from models.enums import DisplayMethodEnum, ResponseMethodEnum
+from models.conclusion_config_model import ConclusionConfiguration
 from models.study_config_model import StudyConfiguration
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.demographics_survey_model import DemographicSurvey
 from models.experiment_config_model import ExperimentConfiguration
 from models.learning_config_model import LearningConfiguration
 from models.uploaded_files_model import UploadedFiles
 from models.waiting_config_model import WaitingConfiguration
-from schemas.study_config_request_schema import StudyConfigRequest, LearningPhaseRequest, FileUploadsRequest, WaitPhaseRequest, ExperimentPhaseRequest, \
-    ConclusionPhaseRequest
-from fastapi import Form, UploadFile, File, HTTPException
+from schemas.study_config_request_schema import StudyConfigRequest, LearningPhaseRequest, FileUploadsRequest, WaitPhaseRequest, ExperimentPhaseRequest, ConclusionPhaseRequest
+from fastapi import HTTPException
 
-from schemas.study_config_response_schema import StudyConfigResponse, FileUploads, LearningPhase, WaitPhase, \
-    ExperimentPhase, ConclusionPhase
+from schemas.study_config_response_schema import StudyConfigResponse, FileUploads, LearningPhase, WaitPhase, ExperimentPhase, ConclusionPhase
 
 """
 Helper Functions to map incoming multipart/form-data
@@ -55,9 +52,10 @@ async def get_study(study_id: uuid.UUID, conn: AsyncSession) -> StudyConfigRespo
     return StudyConfigResponse(
         files=FileUploads(
             consent_form=study.files.consent_form,
-            instruction_set=study.files.instruction_set,
+            study_instruction=study.files.study_instructions,
             learning_image_list=study.files.learning_image_list,
             experiment_image_list=study.files.experiment_image_list,
+            study_debrief=study.files.study_debrief
         ),
         learning=LearningPhase(
             display_duration=study.learning.display_duration,
@@ -73,24 +71,18 @@ async def get_study(study_id: uuid.UUID, conn: AsyncSession) -> StudyConfigRespo
             display_method=study.experiment.display_method,
             response_method=study.experiment.response_method,
         ),
-        survey=ConclusionPhase(
+        conclusion=ConclusionPhase(
             show_results=study.show_results,
-            debrief_file=study.files.debrief or "",
             has_survey=bool(study.survey)
         )
     )
 
 
 
-
-
-
 # INSERT
 async def add_study(config: StudyConfigRequest, conn: AsyncSession):
     try:
-        new_study = StudyConfiguration(
-            show_results=config.survey.show_results
-        )
+        new_study = StudyConfiguration()
         conn.add(new_study)
         await conn.flush()  # To get new_study.id
 
@@ -98,7 +90,7 @@ async def add_study(config: StudyConfigRequest, conn: AsyncSession):
         await save_learning_phase(new_study.id, config.learning, conn)
         await save_wait_phase(new_study.id, config.wait, conn)
         await save_experiment_phase(new_study.id, config.experiment, conn)
-        await save_conclusion_phase(new_study.id, config.survey, conn)
+        await save_conclusion_phase(new_study.id, config.conclusion, conn)
 
         await conn.commit()
         return new_study.id
@@ -109,7 +101,7 @@ async def add_study(config: StudyConfigRequest, conn: AsyncSession):
 
 
 
-async def save_learning_phase(study_id, data: LearningPhaseRequest, conn):
+async def save_learning_phase(study_id: uuid.UUID, data: LearningPhaseRequest, conn: AsyncSession):
     conn.add(LearningConfiguration(
         study_config_id=study_id,
         display_duration=data.display_duration,
@@ -118,14 +110,14 @@ async def save_learning_phase(study_id, data: LearningPhaseRequest, conn):
     ))
 
 
-async def save_wait_phase(study_id, data: WaitPhaseRequest, conn):
+async def save_wait_phase(study_id: uuid.UUID, data: WaitPhaseRequest, conn: AsyncSession):
     conn.add(WaitingConfiguration(
         study_config_id=study_id,
         display_duration=data.display_duration
     ))
 
 
-async def save_experiment_phase(study_id, data: ExperimentPhaseRequest, conn):
+async def save_experiment_phase(study_id: uuid.UUID, data: ExperimentPhaseRequest, conn: AsyncSession):
     conn.add(ExperimentConfiguration(
         study_config_id=study_id,
         display_duration=data.display_duration,
@@ -134,93 +126,24 @@ async def save_experiment_phase(study_id, data: ExperimentPhaseRequest, conn):
         response_method=data.response_method
     ))
 
-
-async def save_conclusion_phase(study_id, data: ConclusionPhaseRequest, conn):
-    # Update StudyConfiguration (only show_results here)
-    await conn.execute(
-        update(StudyConfiguration)
-        .where(StudyConfiguration.id == study_id)
-        .values(show_results=data.show_results)
-    )
-
-    # Add demographic survey row if requested
-    if data.has_survey:
-        conn.add(DemographicSurvey(study_config_id=study_id))
-
-    # Update existing UploadedFiles row with debrief filename
-    await conn.execute(
-        update(UploadedFiles)
-        .where(UploadedFiles.study_config_id == study_id)
-        .values(debrief=data.debrief_file.filename)
-    )
-
-
-async def save_file_uploads(study_id, files: FileUploadsRequest, conn):
-    conn.add(UploadedFiles(
+async def save_conclusion_phase(study_id: uuid.UUID, data: ConclusionPhaseRequest, conn: AsyncSession):
+    conn.add(ConclusionConfiguration(
         study_config_id=study_id,
-        consent_form=files.consent_form.filename,
-        instruction_set=files.study_instructions.filename,
-        learning_image_list=files.learning_phase_list.filename,
-        experiment_image_list=files.experiment_phase_list.filename
+        show_results=data.show_results,
+        survey=data.has_survey
     ))
 
 
-# ------ Form Parsers -------
+async def save_file_uploads(study_id: uuid.UUID, files: FileUploadsRequest, conn):
 
-def getLearningPhase(
-        displayDuration: int = Form(..., alias="learning.displayDuration"),  #(...)
-        pauseDuration: int = Form(..., alias="learning.pauseDuration"),
-        displayMethod: DisplayMethodEnum = Form(..., alias="learning.displayMethod")
-):
-    return LearningPhaseRequest(
-        display_duration=displayDuration,
-        pause_duration=pauseDuration,
-        display_method=displayMethod
-    )
-
-
-def getWaitPhase(
-        DisplayDuration: int = Form(..., alias="waiting.displayDuration"),
-): return WaitPhaseRequest(
-    display_duration=DisplayDuration
-)
-
-
-def getExperimentPhase(
-        displayDuration: int = Form(..., alias="experiment.displayDuration"),
-        pauseDuration: int = Form(..., alias="experiment.pauseDuration"),
-        displayMethod: DisplayMethodEnum = Form(..., alias="experiment.displayMethod"),
-        responseMethod: ResponseMethodEnum = Form(..., alias="experiment.responseMethod")
-):
-    return ExperimentPhaseRequest(
-        display_duration=displayDuration,
-        pause_duration=pauseDuration,
-        display_method=displayMethod,
-        response_method=responseMethod
-    )
-
-
-def getConclusionPhase(
-        showResults: bool = Form(..., alias="conclusion.showResults"),
-        debrief: UploadFile = File(..., alias="conclusion.debrief"),
-        survey: bool = Form(..., alias="conclusion.survey")
-):
-    return ConclusionPhaseRequest(
-        show_results=showResults,
-        debrief_file=debrief,
-        has_survey=survey
-    )
-
-
-def getFileUploads(
-        consentForm: UploadFile = File(..., alias="configFiles.consentForm"),
-        studyInstructions: UploadFile = File(..., alias="configFiles.studyInstructions"),
-        learningList: UploadFile = File(..., alias="configFiles.learningList"),
-        experimentList: UploadFile = File(..., alias="configFiles.experimentList")
-):
-    return FileUploadsRequest(
-        consent_form=consentForm,
-        study_instructions=studyInstructions,
-        learning_phase_list=learningList,
-        experiment_phase_list=experimentList
-    )
+    conn.add(UploadedFiles(
+        study_config_id=study_id,
+        consent_form=files.consent_form.filename,
+        consent_form_bytes=await files.consent_form.read(),
+        study_instructions=files.study_instructions.filename,
+        study_instructions_bytes=await files.study_instructions.read(),
+        learning_image_list=files.learning_phase_list.filename,
+        experiment_image_list=files.experiment_phase_list.filename,
+        study_debrief = files.study_debrief.filename,
+        study_debrief_bytes = await files.study_debrief.read()
+    ))

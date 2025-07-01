@@ -1,7 +1,7 @@
 import uuid
 
 from sqlalchemy import String, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, BYTEA
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base_model import Base
 from .study_config_model import StudyConfiguration
@@ -26,6 +26,11 @@ class UploadedFiles(Base):
         nullable=False
     )
 
+    consent_form_bytes:Mapped[BYTEA] = mapped_column(
+        BYTEA,
+        nullable=False
+    )    
+
     learning_image_list:Mapped[str] = mapped_column(
         String,
         nullable=False
@@ -36,12 +41,26 @@ class UploadedFiles(Base):
         nullable=False
     )
 
-    instruction_set:Mapped[str] = mapped_column(
+    study_instructions:Mapped[str] = mapped_column(
         String,
         nullable=False
     )
 
-    debrief: Mapped[str | None] = mapped_column(String, nullable=True)
+    study_instructions_bytes:Mapped[BYTEA] = mapped_column(
+        BYTEA,
+        nullable=False
+    )    
+
+    study_debrief:Mapped[str] = mapped_column(
+        String,
+        nullable=False
+    )
+
+    study_debrief_bytes:Mapped[BYTEA] = mapped_column(
+        BYTEA,
+        nullable=False
+    )    
+
 
 
     #REFERENCE TO STUDY CONFIG

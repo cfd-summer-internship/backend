@@ -32,5 +32,4 @@ class SurveyQuestion(Base):
         nullable=False
     )
 
-    # ✅ No import — just a string reference
     survey: Mapped["DemographicSurvey"] = relationship("DemographicSurvey", back_populates="questions")

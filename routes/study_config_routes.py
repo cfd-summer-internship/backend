@@ -2,8 +2,8 @@ import uuid
 from fastapi import APIRouter, Depends
 from db.client import get_db_session
 from schemas.study_config_response_schema import StudyConfigResponse
-from services.study_config_service import add_study, get_study, getLearningPhase, getFileUploads, \
-    getWaitPhase, getConclusionPhase, getExperimentPhase
+from services.study_config_service import add_study, get_study
+from services.form_parsers import get_file_uploads, get_learning_phase, get_wait_phase, get_experiment_phase, get_conclusion_phase
 from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.study_config_request_schema import LearningPhaseRequest, FileUploadsRequest, WaitPhaseRequest, \
     ExperimentPhaseRequest, \
@@ -21,8 +21,8 @@ Can then be dissemenated into database
 
 @router.post("/save")
 async def save_configuration(
-        learning: LearningPhaseRequest = Depends(getLearningPhase),
-        files: FileUploadsRequest = Depends(getFileUploads)
+        learning: LearningPhaseRequest = Depends(get_learning_phase),
+        files: FileUploadsRequest = Depends(get_file_uploads)
 ):
     if learning and files:
         return {"message": "Configuration Successfully Submitted"}
@@ -37,18 +37,18 @@ the database using the established connection method
 
 @router.post("/add")
 async def add_configuration(
-        learning: LearningPhaseRequest = Depends(getLearningPhase),
-        waiting: WaitPhaseRequest = Depends(getWaitPhase),
-        experiment: ExperimentPhaseRequest = Depends(getExperimentPhase),
-        conclusion: ConclusionPhaseRequest = Depends(getConclusionPhase),
-        files: FileUploadsRequest = Depends(getFileUploads),
+        learning: LearningPhaseRequest = Depends(get_learning_phase),
+        waiting: WaitPhaseRequest = Depends(get_wait_phase),
+        experiment: ExperimentPhaseRequest = Depends(get_experiment_phase),
+        conclusion: ConclusionPhaseRequest = Depends(get_conclusion_phase),
+        files: FileUploadsRequest = Depends(get_file_uploads),
         conn: AsyncSession = Depends(get_db_session),
 ):
     study = StudyConfigRequest(
         learning=learning,
         wait=waiting,
         experiment=experiment,
-        survey=conclusion,
+        conclusion=conclusion,
         files=files
     )
 
