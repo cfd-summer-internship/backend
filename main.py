@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from routes.study_config_routes import router as ConfigRouter
 import uvicorn as uv
+import models.all_models # noqa
 
 # Initialize FastAPI App
 app = FastAPI()

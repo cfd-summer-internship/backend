@@ -5,11 +5,11 @@ from models.base_model import Base
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from models.user_survey_config_model import UserSurveyConfig
     from models.learning_config_model import LearningConfiguration
     from models.waiting_config_model import WaitingConfiguration
     from models.experiment_config_model import ExperimentConfiguration
     from models.uploaded_files_model import UploadedFiles
-    from models.survey_model_config import DemographicSurvey
     from models.conclusion_config_model import ConclusionConfiguration
 
 
@@ -53,7 +53,7 @@ class StudyConfiguration(Base):
         uselist=False
     )
 
-    survey: Mapped["DemographicSurvey"] = relationship(
+    demographics: Mapped["UserSurveyConfig"] = relationship(
         back_populates="study",
         cascade="all, delete-orphan",
         uselist=False

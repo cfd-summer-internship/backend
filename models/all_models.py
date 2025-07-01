@@ -1,8 +1,8 @@
-from .study_config_model import StudyConfiguration
-from .learning_config_model import LearningConfiguration
-from .waiting_config_model import WaitingConfiguration
-from .experiment_config_model import ExperimentConfiguration
-from .uploaded_files_model import UploadedFiles
-from .survey_model_config import Survey
-from .survey_questions_model import SurveyQuestion
-from .survey_answers_model import SurveyAnswer
+import models.study_config_model
+import models.user_survey_config_model
+import models.learning_config_model
+import models.waiting_config_model
+import models.experiment_config_model
+import models.conclusion_config_model
+# from .survey_questions_model import SurveyQuestion
+# from .survey_answers_model import SurveyAnswer
