@@ -1,5 +1,4 @@
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import uuid
 from models.base_model import Base
