@@ -22,11 +22,12 @@ def test_study_config():
             "conclusion.survey":"false"
         },
         files={
-            "configFiles.consentForm" : ("consent_form.txt", open("tests/assets/consent_form.txt", "rb"), "text/plain"),
-            "configFiles.studyInstructions" : ("study_instructions.txt", open("tests/assets/study_instructions.txt", "rb"), "text/plain"),      
-            "configFiles.learningList" : ("learning_list.txt", open("tests/assets/learning_list.txt", "rb"), "text/plain"),  
-            "configFiles.experimentList" : ("experiment_list.txt", open("tests/assets/experiment_list.txt", "rb"), "text/plain"),  
-            "configFiles.studyDebrief" : ("study_debrief.txt", open("tests/assets/study_debrief.txt", "rb"), "text/plain"),  
+            "configFiles.consentForm" : ("Consent Form", open("tests/assets/Test File.pdf", "rb"), "application/pdf"),
+            "configFiles.studyInstructions" : ("Study Instructions", open("tests/assets/Test File.pdf", "rb"), "application/pdf"),     
+            "configFiles.learningList" : ("Learning List", open("tests/assets/Test File.pdf", "rb"), "application/pdf"),  
+            "configFiles.experimentList" : ("Experiment List", open("tests/assets/Test File.pdf", "rb"), "application/pdf"), 
+            "configFiles.studyDebrief" : ("Study Debrief", open("tests/assets/Test File.pdf", "rb"), "application/pdf"),
         }
                            )
     assert response.status_code == 200
+    assert response.json()["status"] == "ok"

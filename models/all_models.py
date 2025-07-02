@@ -4,5 +4,6 @@ import models.learning_config_model
 import models.waiting_config_model
 import models.experiment_config_model
 import models.conclusion_config_model
-# from .survey_questions_model import SurveyQuestion
-# from .survey_answers_model import SurveyAnswer
+import models.survey_questions_model
+import models.survey_answers_model
+import models.uploaded_files_model

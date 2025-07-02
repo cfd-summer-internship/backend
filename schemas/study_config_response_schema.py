@@ -1,7 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from models.enums import DisplayMethodEnum, ResponseMethodEnum
 
-
 class LearningPhase(BaseModel):
     display_duration: int
     pause_duration: int
@@ -25,18 +24,13 @@ class ConclusionPhase(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-
 class FileUploads(BaseModel):
-    #UPDATE TO BYTES
     consent_form: str
     study_instruction: str
     learning_image_list: str
     experiment_image_list: str
     study_debrief: str
     model_config = ConfigDict(from_attributes=True)
-
-
 
 class StudyConfigResponse(BaseModel):
     files: FileUploads
