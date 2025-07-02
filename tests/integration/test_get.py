@@ -12,7 +12,7 @@ async def test_get_study_config():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as client:
-        study_response = await client.get("/config/study_list")
+        study_response = await client.get("/study/study_ids")
         assert study_response.status_code == 200
         study_id = study_response.json()
 

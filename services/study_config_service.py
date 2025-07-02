@@ -116,65 +116,6 @@ async def add_study(config: StudyConfigRequest, conn: AsyncSession):
         raise e
 
 
-async def get_study_id_list(conn: AsyncSession):
-    try:
-        stmt = select(StudyConfiguration).execution_options(populate_existing=True)
-        result = await conn.execute(stmt)
-        ids: list[uuid.UUUID] = []
-        rows = result.scalars().all()
-        for study in rows:
-            ids.append(study.id)
-        return ids
-    except Exception:
-        raise HTTPException(404)
-
-
-# async def get_uploaded_files(study_id: uuid.UUID, conn: AsyncSession):
-#     try:
-#         stmt = (
-#             select(UploadedFiles)
-#             .where(UploadedFiles.study_config_id == study_id)
-#             .execution_options(populate_existing=True)
-#         )
-#         result = await conn.execute(stmt)
-#         files = result.scalars().first()
-#         if files.study_config_id != study_id:
-#             raise HTTPException(status_code=404, detail="Invalid ID")
-#         return FileUploads(
-#             consent_form=FileData(filename=files.consent_form, data=files.consent_form_bytes),
-#             study_instruction=FileData(filename=files.study_instruction, data=files.study_instruction_bytes),
-#             learning_image_list=files.learning_image_list,
-#             experiment_image_list=files.experiment_image_list,
-#             study_debrief=FileData(filename=files.study_debrief, data=files.study_debrief)
-#         )
-#     except Exception as e:
-#         raise HTTPException(status_code=404, detail=e)
-
-
-async def get_consent_form(study_id: uuid.UUID, conn: AsyncSession):
-    try:
-        stmt = (
-            select(UploadedFiles.consent_form, UploadedFiles.consent_form_bytes)
-            .where(UploadedFiles.study_config_id == study_id)
-            .execution_options(populate_existing=True)
-        )
-        result = await conn.execute(stmt)
-        file = result.first()
-
-        if not file:
-            raise HTTPException(status_code=404, detail="Consent form not found")
-
-        return StreamingResponse(
-            BytesIO(file[1]),
-            media_type="application/pdf",
-            headers={
-                "Content-Disposition": f'inline; filename="{file[0]}"'
-            },
-        )
-    except Exception as e:
-        raise HTTPException(status_code=404, detail=e)
-
-
 """
 Adds the corresponding section to the database
 """

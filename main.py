@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from routes.study_config_routes import router as ConfigRouter
+from routes.study_retrieval_routes import router as RetrievalRouter
 import uvicorn as uv
 import models.all_models # noqa
 
@@ -7,6 +8,7 @@ import models.all_models # noqa
 app = FastAPI()
 # Connect Router
 app.include_router(ConfigRouter)
+app.include_router(RetrievalRouter)
 
 @app.get("/")
 def hello_world():

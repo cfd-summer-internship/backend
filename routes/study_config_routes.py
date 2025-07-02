@@ -2,7 +2,7 @@ import uuid
 from fastapi import APIRouter, Depends
 from db.client import get_db_session
 from schemas.study_config_response_schema import StudyConfigResponse
-from services.study_config_service import add_study, get_study, get_study_id_list, get_consent_form
+from services.study_config_service import add_study, get_study
 from services.form_parsers import get_file_uploads, get_learning_phase, get_wait_phase, get_experiment_phase, get_conclusion_phase
 from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.study_config_request_schema import LearningPhaseRequest, FileUploadsRequest, WaitPhaseRequest, \
@@ -62,23 +62,3 @@ async def get_configuration(
         conn: AsyncSession = Depends(get_db_session),
 ):
     return await get_study(study_id=study_id, conn=conn)
-
-@router.get("/study_list")
-async def get_study_id(
-        conn: AsyncSession = Depends(get_db_session),
-) -> list[uuid.UUID]:
-    return await get_study_id_list(conn=conn)
-
-# @router.get("/files")
-# async def get_files(
-#     study_id: uuid.UUID,
-#     conn: AsyncSession = Depends(get_db_session),
-# ):
-#     return await get_uploaded_files(study_id,conn=conn)
-
-@router.get("/get_consent_form/{study_id}")
-async def get_files(
-    study_id: uuid.UUID,
-    conn: AsyncSession = Depends(get_db_session),
-):
-    return await get_consent_form(study_id,conn)

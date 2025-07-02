@@ -12,11 +12,11 @@ async def test_get_consent_form():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as client:
-        study_response = await client.get("/config/study_list")
+        study_response = await client.get("/study/study_ids")
         assert study_response.status_code == 200
         study_id = study_response.json()
 
-        response = await client.get(f"/config/get_consent_form/{study_id[0]}")
+        response = await client.get(f"/study/consent_form/{study_id[0]}")
         assert response.status_code == 200
         assert response.headers["content-type"] == "application/pdf"
         assert response.headers["content-disposition"].startswith("inline")
