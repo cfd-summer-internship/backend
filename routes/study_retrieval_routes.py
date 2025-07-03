@@ -44,7 +44,7 @@ async def get_study_consent_form(
     )
 
 
-@router.get("/instructions/{study_id}")
+@router.get("/study_instructions/{study_id}")
 async def get_study_instructions(
     study_id: uuid.UUID,
     conn: AsyncSession = Depends(get_db_session),
@@ -58,7 +58,7 @@ async def get_study_instructions(
     )
 
 
-@router.get("/debrief/{study_id}")
+@router.get("/study_debrief/{study_id}")
 async def get_study_debrief(
     study_id: uuid.UUID,
     conn: AsyncSession = Depends(get_db_session),
