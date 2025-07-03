@@ -1,6 +1,5 @@
 import uuid
 
-from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -21,7 +20,6 @@ from schemas.study_config_request_schema import (
     ConclusionPhaseRequest,
 )
 from fastapi import HTTPException
-from io import BytesIO
 from schemas.study_config_response_schema import (
     StudyConfigResponse,
     FileUploads,
