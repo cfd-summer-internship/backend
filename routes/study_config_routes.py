@@ -1,64 +1,50 @@
-import uuid
 from fastapi import APIRouter, Depends
 from db.client import get_db_session
-from schemas.study_config_response_schema import StudyConfigResponse
-from services.study_config_service import add_study, get_study, getLearningPhase, getFileUploads, \
-    getWaitPhase, getConclusionPhase, getExperimentPhase
+from schemas.study_config_response_schema import MessageResponse
+from services.study_config_service import add_study
+from services.form_parsers import (
+    get_file_uploads,
+    get_learning_phase,
+    get_wait_phase,
+    get_experiment_phase,
+    get_conclusion_phase,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
-from schemas.study_config_request_schema import LearningPhaseRequest, FileUploadsRequest, WaitPhaseRequest, \
-    ExperimentPhaseRequest, \
-    ConclusionPhaseRequest, StudyConfigRequest
+from schemas.study_config_request_schema import (
+    LearningPhaseRequest,
+    FileUploadsRequest,
+    WaitPhaseRequest,
+    ExperimentPhaseRequest,
+    ConclusionPhaseRequest,
+    StudyConfigRequest,
+)
 
 
 # ROUTER
 router = APIRouter(prefix="/config", tags=["Config"])
 
-"""
-Test API to show how to take in the multipart/form-data
-Can then be dissemenated into database
-"""
 
-
-@router.post("/save")
-async def save_configuration(
-        learning: LearningPhaseRequest = Depends(getLearningPhase),
-        files: FileUploadsRequest = Depends(getFileUploads)
-):
-    if learning and files:
-        return {"message": "Configuration Successfully Submitted"}
-
-
-"""
-APIs to insert and retrieve data from
-the database using the established connection method
-"""
-
-
-
-@router.post("/add")
+@router.post("/add", response_model=MessageResponse)
 async def add_configuration(
-        learning: LearningPhaseRequest = Depends(getLearningPhase),
-        waiting: WaitPhaseRequest = Depends(getWaitPhase),
-        experiment: ExperimentPhaseRequest = Depends(getExperimentPhase),
-        conclusion: ConclusionPhaseRequest = Depends(getConclusionPhase),
-        files: FileUploadsRequest = Depends(getFileUploads),
-        conn: AsyncSession = Depends(get_db_session),
-):
+    learning: LearningPhaseRequest = Depends(get_learning_phase),
+    waiting: WaitPhaseRequest = Depends(get_wait_phase),
+    experiment: ExperimentPhaseRequest = Depends(get_experiment_phase),
+    conclusion: ConclusionPhaseRequest = Depends(get_conclusion_phase),
+    files: FileUploadsRequest = Depends(get_file_uploads),
+    conn: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """
+    Insert a new study configuration
+
+    Takes in a multipart/form-data that consists of value for each corresponding phase  
+    """
     study = StudyConfigRequest(
         learning=learning,
         wait=waiting,
         experiment=experiment,
-        survey=conclusion,
-        files=files
+        conclusion=conclusion,
+        files=files,
     )
 
     await add_study(config=study, conn=conn)
-    return {"status": "ok"}
-
-
-@router.get("/retrieve/{study_id}", response_model=StudyConfigResponse)
-async def get_configuration(
-        study_id: uuid.UUID,
-        conn: AsyncSession = Depends(get_db_session),
-):
-    return await get_study(study_id=study_id, conn=conn)
+    return {"message": "Configuration added succesfully"}

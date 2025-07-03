@@ -2,6 +2,10 @@ from pydantic import BaseModel, ConfigDict
 from models.enums import DisplayMethodEnum, ResponseMethodEnum
 
 
+class MessageResponse(BaseModel):
+    message: str
+
+
 class LearningPhase(BaseModel):
     display_duration: int
     pause_duration: int
@@ -21,20 +25,18 @@ class ExperimentPhase(LearningPhase):
 
 class ConclusionPhase(BaseModel):
     show_results: bool
-    debrief_file: str
     has_survey: bool
 
     model_config = ConfigDict(from_attributes=True)
 
 
-
 class FileUploads(BaseModel):
     consent_form: str
-    instruction_set: str
+    study_instruction: str
     learning_image_list: str
     experiment_image_list: str
+    study_debrief: str
     model_config = ConfigDict(from_attributes=True)
-
 
 
 class StudyConfigResponse(BaseModel):
@@ -42,5 +44,5 @@ class StudyConfigResponse(BaseModel):
     learning: LearningPhase
     wait: WaitPhase
     experiment: ExperimentPhase
-    survey: ConclusionPhase
+    conclusion: ConclusionPhase
     model_config = ConfigDict(from_attributes=True)

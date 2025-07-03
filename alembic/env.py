@@ -4,15 +4,18 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+import models.all_models
 from models.base_model import Base
 from settings import get_settings
+from sqlalchemy.orm import registry
+
 
 settings = get_settings()
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-# Interpret the config fil e for Python logging.
+# Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -21,6 +24,8 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 target_metadata = Base.metadata
 #target_metadata = None
+print("Models registered in ORM:")
+print(list(Base.registry._class_registry.keys()))
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

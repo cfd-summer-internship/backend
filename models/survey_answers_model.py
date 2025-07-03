@@ -1,15 +1,13 @@
 import uuid
-from typing import TYPE_CHECKING
 from sqlalchemy import Integer, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base_model import Base
-
-#That tells linters and type checkers:
-# “Only import this when doing static analysis (e.g., by Ruff or MyPy), not at runtime.”
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from demographics_survey_model import DemographicSurvey
+    from models.user_survey_config_model import UserSurveyConfig
+
 
 class SurveyAnswer(Base):
     __tablename__ = "survey_answer"
@@ -32,4 +30,4 @@ class SurveyAnswer(Base):
         nullable=False
     )
 
-    survey: Mapped["DemographicSurvey"] = relationship("DemographicSurvey", back_populates="answers")
+    survey: Mapped["UserSurveyConfig"] = relationship(back_populates="answers")

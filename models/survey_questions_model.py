@@ -5,11 +5,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base_model import Base
 from typing import TYPE_CHECKING
 
-#That tells linters and type checkers:
-# “Only import this when doing static analysis (e.g., by Ruff or MyPy), not at runtime.”
-
 if TYPE_CHECKING:
-    from demographics_survey_model import DemographicSurvey
+    from models.user_survey_config_model import UserSurveyConfig
 
 class SurveyQuestion(Base):
     __tablename__ = "survey_question"
@@ -32,5 +29,4 @@ class SurveyQuestion(Base):
         nullable=False
     )
 
-    # ✅ No import — just a string reference
-    survey: Mapped["DemographicSurvey"] = relationship("DemographicSurvey", back_populates="questions")
+    survey: Mapped["UserSurveyConfig"] = relationship(back_populates="questions")

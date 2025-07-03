@@ -1,16 +1,16 @@
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import uuid
 from models.base_model import Base
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from models.user_survey_config_model import UserSurveyConfig
     from models.learning_config_model import LearningConfiguration
     from models.waiting_config_model import WaitingConfiguration
     from models.experiment_config_model import ExperimentConfiguration
     from models.uploaded_files_model import UploadedFiles
-    from models.demographics_survey_model import DemographicSurvey
+    from models.conclusion_config_model import ConclusionConfiguration
 
 
 class StudyConfiguration(Base):
@@ -21,11 +21,6 @@ class StudyConfiguration(Base):
         primary_key=True,
         default=uuid.uuid4,
         unique=True
-    )
-
-    show_results: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False
     )
 
     learning: Mapped["LearningConfiguration"] = relationship(
@@ -46,13 +41,19 @@ class StudyConfiguration(Base):
         uselist=False
     )
 
+    conclusion: Mapped["ConclusionConfiguration"] = relationship(
+        back_populates="study",
+        cascade="all, delete-orphan",
+        uselist=False
+    )
+
     files: Mapped["UploadedFiles"] = relationship(
         back_populates="study",
         cascade="all, delete-orphan",
         uselist=False
     )
 
-    survey: Mapped["DemographicSurvey"] = relationship(
+    demographics: Mapped["UserSurveyConfig"] = relationship(
         back_populates="study",
         cascade="all, delete-orphan",
         uselist=False

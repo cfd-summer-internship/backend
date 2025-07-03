@@ -28,7 +28,6 @@ class ExperimentPhaseRequest(LearningPhaseRequest):
 
 class ConclusionPhaseRequest(BaseModel):
     show_results: bool
-    debrief_file: UploadFile
     has_survey: bool
 
 
@@ -37,6 +36,7 @@ class FileUploadsRequest(BaseModel):
     study_instructions: UploadFile
     learning_phase_list: UploadFile
     experiment_phase_list: UploadFile
+    study_debrief: UploadFile
 
 
 class StudyConfigRequest(BaseModel):
@@ -44,6 +44,6 @@ class StudyConfigRequest(BaseModel):
     learning: LearningPhaseRequest
     wait: WaitPhaseRequest
     experiment: ExperimentPhaseRequest
-    survey: ConclusionPhaseRequest  # or 'survey' if you're storing demographic survey
+    conclusion: ConclusionPhaseRequest
 
     model_config = ConfigDict(from_attributes=True)
