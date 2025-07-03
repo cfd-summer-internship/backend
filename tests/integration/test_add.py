@@ -30,4 +30,4 @@ def test_study_config():
         }
                            )
     assert response.status_code == 200
-    assert response.json()["status"] == "ok"
+    assert response.json()["message"] == "Configuration added succesfully"

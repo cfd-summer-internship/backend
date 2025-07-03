@@ -16,7 +16,7 @@ async def test_get_study_config():
         assert study_response.status_code == 200
         study_id = study_response.json()
 
-        response = await client.get(f"/config/retrieve/{study_id[0]}")
+        response = await client.get(f"/study/export/{study_id[0]}")
         assert response.status_code == 200
         json_data = response.json()
         parsed = StudyConfigResponse(**json_data)
