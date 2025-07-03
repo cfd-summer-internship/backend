@@ -11,7 +11,7 @@ from services.study_retrieval_service import (
     get_file_from_db,
 )
 
-router = APIRouter(prefix="/study", tags=["study"])
+router = APIRouter(prefix="/study", tags=["Study"])
 
 
 @router.get("/study_ids")
