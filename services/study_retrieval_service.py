@@ -1,12 +1,22 @@
 from io import BytesIO
 import uuid
+
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.study_config_model import StudyConfiguration
 from models.uploaded_files_model import UploadedFiles
+from schemas.study_config_response_schema import StudyConfigResponse
+from schemas.study_config_response_schema import (
+    FileUploads,
+    LearningPhase,
+    WaitPhase,
+    ExperimentPhase,
+    ConclusionPhase,
+)
 
 
 async def get_study_id_list(conn: AsyncSession) -> list[uuid.UUID]:
@@ -57,7 +67,7 @@ async def get_file_from_db(
             Asyn Connection to the Database
         media_type:
             String value representing mime type. Defaults to "application/pdf"
-        
+
     Returns:
         A Streaming Response of bytes that can be served to the frontend as a BLOB.
 
@@ -87,3 +97,80 @@ async def get_file_from_db(
         )
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+async def get_config_file(
+    study_id: uuid.UUID, conn: AsyncSession
+) -> StudyConfigResponse:
+    """
+    Returns Configuration File
+
+    Uses a series of join statements to retrieve the entirety of the config file from the database.
+    Excludes file bytes but includes filenames for reference.
+    Can be used to export the config file for future reference.
+
+    Args:
+        study_id:
+            UUID for the requested study
+        conn:
+            Async connection to database
+
+    Returns:
+        An instance of StudyConfigResponse serialized as a JSON response.
+
+    Raises:
+        HTTPException: 404: Study not found
+        HTTPException: 500: Missing file upload data
+        HTTPException: 500: Missing phase configuration
+    """
+    stmt = (
+        select(StudyConfiguration)
+        .options(
+            selectinload(StudyConfiguration.learning),
+            selectinload(StudyConfiguration.wait),
+            selectinload(StudyConfiguration.experiment),
+            # selectinload(StudyConfiguration.survey),
+            selectinload(StudyConfiguration.files),
+            selectinload(StudyConfiguration.conclusion),
+        )
+        .where(StudyConfiguration.id == study_id)
+    )
+
+    result = await conn.execute(stmt)
+    study = result.scalar_one_or_none()
+
+    if not study:
+        raise HTTPException(status_code=404, detail="Study not found")
+
+    if not study.files:
+        raise HTTPException(status_code=500, detail="Missing file upload data.")
+    if not study.learning or not study.wait or not study.experiment:
+        raise HTTPException(status_code=500, detail="Missing phase configuration.")
+
+    return StudyConfigResponse(
+        files=FileUploads(
+            consent_form=study.files.consent_form,
+            study_instruction=study.files.study_instructions,
+            learning_image_list=study.files.learning_image_list,
+            experiment_image_list=study.files.experiment_image_list,
+            study_debrief=study.files.study_debrief,
+        ),
+        learning=LearningPhase(
+            display_duration=study.learning.display_duration,
+            pause_duration=study.learning.pause_duration,
+            display_method=study.learning.display_method,
+        ),
+        wait=WaitPhase(
+            display_duration=study.wait.display_duration,
+        ),
+        experiment=ExperimentPhase(
+            display_duration=study.experiment.display_duration,
+            pause_duration=study.experiment.pause_duration,
+            display_method=study.experiment.display_method,
+            response_method=study.experiment.response_method,
+        ),
+        conclusion=ConclusionPhase(
+            show_results=study.conclusion.show_results,
+            has_survey=study.conclusion.survey,
+        ),
+    )

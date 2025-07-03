@@ -1,7 +1,6 @@
 import uuid
 
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
+from fastapi import HTTPException
 
 from models.conclusion_config_model import ConclusionConfiguration
 from models.study_config_model import StudyConfiguration
@@ -19,82 +18,18 @@ from schemas.study_config_request_schema import (
     ExperimentPhaseRequest,
     ConclusionPhaseRequest,
 )
-from fastapi import HTTPException
-from schemas.study_config_response_schema import (
-    StudyConfigResponse,
-    FileUploads,
-    LearningPhase,
-    WaitPhase,
-    ExperimentPhase,
-    ConclusionPhase,
-)
-
-"""
-Helper Functions to map incoming multipart/form-data
-into their corresponding pydantic models.
-This will help with database insertion and type enforcement.
-
-Example async methods to show how to interact
-with the database using SQLAlchemy
-"""
 
 
-async def get_study(study_id: uuid.UUID, conn: AsyncSession) -> StudyConfigResponse:
-    stmt = (
-        select(StudyConfiguration)
-        .options(
-            selectinload(StudyConfiguration.learning),
-            selectinload(StudyConfiguration.wait),
-            selectinload(StudyConfiguration.experiment),
-            # selectinload(StudyConfiguration.survey),
-            selectinload(StudyConfiguration.files),
-            selectinload(StudyConfiguration.conclusion),
-        )
-        .where(StudyConfiguration.id == study_id)
-    )
-
-    result = await conn.execute(stmt)
-    study = result.scalar_one_or_none()
-
-    if not study:
-        raise HTTPException(status_code=404, detail="Study not found")
-
-    if not study.files:
-        raise HTTPException(status_code=500, detail="Missing file upload data.")
-    if not study.learning or not study.wait or not study.experiment:
-        raise HTTPException(status_code=500, detail="Missing phase configuration.")
-
-    return StudyConfigResponse(
-        files=FileUploads(
-            consent_form=study.files.consent_form,
-            study_instruction=study.files.study_instructions,
-            learning_image_list=study.files.learning_image_list,
-            experiment_image_list=study.files.experiment_image_list,
-            study_debrief=study.files.study_debrief,
-        ),
-        learning=LearningPhase(
-            display_duration=study.learning.display_duration,
-            pause_duration=study.learning.pause_duration,
-            display_method=study.learning.display_method,
-        ),
-        wait=WaitPhase(
-            display_duration=study.wait.display_duration,
-        ),
-        experiment=ExperimentPhase(
-            display_duration=study.experiment.display_duration,
-            pause_duration=study.experiment.pause_duration,
-            display_method=study.experiment.display_method,
-            response_method=study.experiment.response_method,
-        ),
-        conclusion=ConclusionPhase(
-            show_results=study.conclusion.show_results,
-            has_survey=study.conclusion.survey,
-        ),
-    )
-
-
-# INSERT
 async def add_study(config: StudyConfigRequest, conn: AsyncSession):
+    """Adds a new Study Configuration into the database
+
+    Uses helper functions to handle insertion of specific components.
+    Only Commits changes if the entire configuration was succesfully inserted.
+    Rollsback uncommited changes on failed insert.
+
+    Raises:
+        HTTPException: 500: Exception Details
+    """
     try:
         new_study = StudyConfiguration()
         conn.add(new_study)
@@ -111,14 +46,10 @@ async def add_study(config: StudyConfigRequest, conn: AsyncSession):
 
     except Exception as e:
         await conn.rollback()
-        raise e
+        raise HTTPException(500, detail=str(e))
 
 
-"""
-Adds the corresponding section to the database
-"""
-
-
+# HELPER FUNCTIONS FOR DATABASE INSERTION
 async def save_learning_phase(
     study_id: uuid.UUID, data: LearningPhaseRequest, conn: AsyncSession
 ):
@@ -169,6 +100,9 @@ async def save_conclusion_phase(
 
 
 async def save_file_uploads(study_id: uuid.UUID, files: FileUploadsRequest, conn):
+    """Inserts Files into database.
+
+    Saves the filename as well as the raw file bytes as a BYTEA datatype."""
     conn.add(
         UploadedFiles(
             study_config_id=study_id,

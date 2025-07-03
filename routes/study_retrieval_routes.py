@@ -5,7 +5,9 @@ from fastapi.responses import StreamingResponse
 from db.client import get_db_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.uploaded_files_model import UploadedFiles
+from schemas.study_config_response_schema import StudyConfigResponse
 from services.study_retrieval_service import (
+    get_config_file,
     get_study_id_list,
     get_study_id,
     get_file_from_db,
@@ -18,9 +20,7 @@ router = APIRouter(prefix="/study", tags=["Study"])
 async def get_all_study_ids(
     conn: AsyncSession = Depends(get_db_session),
 ) -> list[uuid.UUID]:
-    """
-    Returns a list of all Study ID's from database
-    """
+    """Returns a list of all Study ID's from database"""
     return await get_study_id_list(conn=conn)
 
 
@@ -40,10 +40,7 @@ async def get_study_consent_form(
 ) -> StreamingResponse:
     """Returns Consent form as a streaming response of bytes."""
     return await get_file_from_db(
-        study_id, 
-        UploadedFiles.consent_form, 
-        UploadedFiles.consent_form_bytes, 
-        conn
+        study_id, UploadedFiles.consent_form, UploadedFiles.consent_form_bytes, conn
     )
 
 
@@ -68,8 +65,14 @@ async def get_study_debrief(
 ) -> StreamingResponse:
     """Fetches Study Debrief as a streaming response of bytes."""
     return await get_file_from_db(
-        study_id, 
-        UploadedFiles.study_debrief, 
-        UploadedFiles.study_debrief_bytes, 
-        conn
+        study_id, UploadedFiles.study_debrief, UploadedFiles.study_debrief_bytes, conn
     )
+
+
+@router.get("/export/{study_id}", response_model=StudyConfigResponse)
+async def export_config_file(
+    study_id: uuid.UUID,
+    conn: AsyncSession = Depends(get_db_session),
+) -> StudyConfigResponse:
+    """Returns Full Configuration File as a JSON"""
+    return await get_config_file(study_id=study_id, conn=conn)
