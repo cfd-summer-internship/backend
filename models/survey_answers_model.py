@@ -25,9 +25,19 @@ class SurveyAnswer(Base):
         unique=True
     )
 
+    survey_question_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("survey_question.id", ondelete="CASCADE", onupdate="CASCADE"),
+        unique=True
+    )
+
     text: Mapped[str] = mapped_column(
         String,
         nullable=False
     )
 
+    #REFERENCE TO SURVEY QUESTION (1:1)
+    question: Mapped["UserSurveyConfig"] = relationship(back_populates="answer")
+
+    #REFERENCE TO SURVEY CONFIG (1:MANY)
     survey: Mapped["UserSurveyConfig"] = relationship(back_populates="answers")
