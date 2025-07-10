@@ -28,7 +28,7 @@ class ConclusionConfiguration(Base):
 
     survey: Mapped[bool] = mapped_column(
         Boolean,
-        nullable=False
+        nullable=True
     )
 
     #REFERENCE TO STUDY CONFIG
