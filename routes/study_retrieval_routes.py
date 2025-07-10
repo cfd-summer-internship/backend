@@ -11,6 +11,9 @@ from services.study_retrieval_service import (
     get_study_id_list,
     get_study_id,
     get_file_from_db,
+    get_learning_phase_from_db,
+    get_waiting_phase_from_db,
+    get_experiment_phase_from_db,
 )
 
 router = APIRouter(prefix="/study", tags=["Study"])
@@ -76,3 +79,30 @@ async def export_config_file(
 ) -> StudyConfigResponse:
     """Returns Full Configuration File as a JSON"""
     return await get_config_file(study_id=study_id, conn=conn)
+
+
+@router.get("/learning_phase/{study_id}")
+async def get_learning_phase(
+    study_id: uuid.UUID,
+    conn: AsyncSession = Depends(get_db_session),
+):
+    """Returns the Learning Phase configuration for the study."""
+    return await get_learning_phase_from_db(study_id=study_id, conn=conn)
+
+
+@router.get("/waiting_phase/{study_id}")
+async def get_waiting_phase(
+    study_id: uuid.UUID,
+    conn: AsyncSession = Depends(get_db_session),
+):
+    """Returns the Waiting Phase configuration for the study"""
+    return await get_waiting_phase_from_db(study_id=study_id, conn=conn)
+
+
+@router.get("/experiment_phase/{study_id}")
+async def get_experiment_phase(
+    study_id: uuid.UUID,
+    conn: AsyncSession = Depends(get_db_session),
+):
+    """Returns the Experiment Phase configuration for the study."""
+    return await get_experiment_phase_from_db(study_id=study_id, conn=conn)

@@ -174,3 +174,61 @@ async def get_config_file(
             has_survey=study.conclusion.survey,
         ),
     )
+
+async def get_learning_phase_from_db(
+    study_id: uuid.UUID, conn: AsyncSession
+) -> LearningPhase:
+    stmt = (
+        select(StudyConfiguration)
+        .options(selectinload(StudyConfiguration.learning))
+        .where(StudyConfiguration.id == study_id)
+    )
+    result = await conn.execute(stmt)
+    study = result.scalar_one_or_none()
+    if not study or not study.learning:
+        raise HTTPException(status_code=404, detail="Learning phase not found")
+    learning = study.learning
+    return LearningPhase(
+        display_duration=learning.display_duration,
+        pause_duration=learning.pause_duration,
+        display_method=learning.display_method,
+    )
+
+
+async def get_waiting_phase_from_db(
+    study_id: uuid.UUID, conn: AsyncSession
+) -> WaitPhase:
+    stmt = (
+        select(StudyConfiguration)
+        .options(selectinload(StudyConfiguration.wait))
+        .where(StudyConfiguration.id == study_id)
+    )
+    result = await conn.execute(stmt)
+    study = result.scalar_one_or_none()
+    if not study or not study.wait:
+        raise HTTPException(status_code = 404, detail="Waiting phase not found")
+    wait = study.wait
+    return WaitPhase(
+        display_duration=wait.display_duration,
+    )
+
+
+async def get_experiment_phase_from_db(
+    study_id: uuid.UUID, conn: AsyncSession
+) -> ExperimentPhase:
+    stmt = (
+        select(StudyConfiguration)
+        .options(selectinload(StudyConfiguration.experiment))
+        .where(StudyConfiguration.id == study_id)
+    )
+    result = await conn.execute(stmt)
+    study = result.scalar_one_or_none()
+    if not study or not study.experiment:
+        raise HTTPException(status_code=404, detail="Experiment phase not found")
+    experiment = study.experiment
+    return ExperimentPhase(
+        display_duration=experiment.display_duration,
+        pause_duration=experiment.pause_duration,
+        display_method=experiment.display_method,
+        response_method=experiment.response_method,
+    )
