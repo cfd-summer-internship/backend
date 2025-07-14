@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from models.user_survey_config_model import UserSurveyConfig
+    from models.survey_questions_model import SurveyQuestion
 
 
 class SurveyAnswer(Base):
@@ -36,8 +37,8 @@ class SurveyAnswer(Base):
         nullable=False
     )
 
-    #REFERENCE TO SURVEY QUESTION (1:1)
-    question: Mapped["UserSurveyConfig"] = relationship(back_populates="answer")
-
     #REFERENCE TO SURVEY CONFIG (1:MANY)
     survey: Mapped["UserSurveyConfig"] = relationship(back_populates="answers")
+
+    #REFERENCE TO SURVEY QUESTION (1:1)
+    question: Mapped["SurveyQuestion"] = relationship(back_populates="answer")

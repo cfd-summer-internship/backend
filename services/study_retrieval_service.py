@@ -29,8 +29,8 @@ async def get_study_id_list(conn: AsyncSession) -> list[uuid.UUID]:
         for study in rows:
             ids.append(study.id)
         return ids
-    except Exception:
-        raise HTTPException(404)
+    except Exception as e:
+        raise HTTPException(404, detail=str(e))
 
 
 async def get_study_id(study_code: str, conn: AsyncSession) -> uuid.UUID:

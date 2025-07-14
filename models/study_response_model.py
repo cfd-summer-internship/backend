@@ -13,6 +13,7 @@ class StudyResponse(Base):
         UUID(as_uuid=True),
         ForeignKey("study_results.id", ondelete="CASCADE", onupdate="CASCADE"),
         unique=True,
+        primary_key=True
     )
 
     image_id: Mapped[str] = mapped_column(String, nullable=False)

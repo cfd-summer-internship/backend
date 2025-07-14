@@ -1,6 +1,6 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship, List
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 import uuid
 from models.base_model import Base
 from models.study_config_model import StudyConfiguration
@@ -34,4 +34,4 @@ class Study(Base):
     config: Mapped[StudyConfiguration] = relationship(back_populates="study")
 
     # REFERENCE TO STUDY RESULTS ONE-TO-MANY
-    results: Mapped[List[StudyResults]] = relationship()
+    results: Mapped[list[StudyResults]] = relationship()

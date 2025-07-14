@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column, List, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 import uuid
 from models.base_model import Base
 from models.study_response_model import StudyResponse
@@ -25,7 +25,7 @@ class StudyResults(Base):
         UUID(as_uuid=True), default=uuid.uuid4, unique=True
     )
 
-    submitted = mapped_column(DateTime, default=datetime.datetime.utcnow)
+    submitted = mapped_column(DateTime, default=datetime.now(timezone.utc))
 
     # REFERENCE TO STUDY REPONSES ONE-TO-MANY
-    responses: Mapped[List[StudyResponse]] = relationship()
+    responses: Mapped[list[StudyResponse]] = relationship()
