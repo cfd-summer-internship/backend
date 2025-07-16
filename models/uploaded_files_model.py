@@ -22,9 +22,9 @@ class UploadedFiles(Base):
 
     consent_form_bytes: Mapped[BYTEA] = mapped_column(BYTEA, nullable=False)
 
-    learning_image_list: Mapped[str] = mapped_column(String, nullable=False)
+    learning_image_list: Mapped[list[str]] = mapped_column(String, nullable=False)
 
-    experiment_image_list: Mapped[str] = mapped_column(String, nullable=False)
+    experiment_image_list: Mapped[list[str]] = mapped_column(String, nullable=False)
 
     study_instructions: Mapped[str] = mapped_column(String, nullable=False)
 
