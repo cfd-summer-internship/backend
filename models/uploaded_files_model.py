@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, ARRAY
 from sqlalchemy.dialects.postgresql import UUID, BYTEA
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base_model import Base
@@ -22,9 +22,9 @@ class UploadedFiles(Base):
 
     consent_form_bytes: Mapped[BYTEA] = mapped_column(BYTEA, nullable=False)
 
-    learning_image_list: Mapped[list[str]] = mapped_column(String, nullable=False)
+    learning_image_list: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False)
 
-    experiment_image_list: Mapped[list[str]] = mapped_column(String, nullable=False)
+    experiment_image_list: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False)
 
     study_instructions: Mapped[str] = mapped_column(String, nullable=False)
 

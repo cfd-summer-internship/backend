@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from models.experiment_config_model import ExperimentConfiguration
     from models.uploaded_files_model import UploadedFiles
     from models.conclusion_config_model import ConclusionConfiguration
+    from models.study_model import Study
 
 
 class StudyConfiguration(Base):
@@ -55,6 +56,13 @@ class StudyConfiguration(Base):
 
     demographics: Mapped["UserSurveyConfig"] = relationship(
         back_populates="study",
+        cascade="all, delete-orphan",
+        uselist=False
+    )
+
+    #STUDY PARENT -> STORES INFORMATION REGARDING THE STUDY
+    study: Mapped["Study"] = relationship(
+        back_populates="config",
         cascade="all, delete-orphan",
         uselist=False
     )
