@@ -4,6 +4,7 @@ import uuid
 from models.base_model import Base
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
     from models.user_survey_config_model import UserSurveyConfig
     from models.learning_config_model import LearningConfiguration
@@ -40,6 +41,12 @@ class StudyConfiguration(Base):
         cascade="all, delete-orphan",
         uselist=False
     )
+
+    # survey: Mapped["SurveyQuestion"] = relationship(
+    #     back_populates="study",
+    #     cascade="all, delete-orphan",
+    #     uselist=False
+    # )
 
     conclusion: Mapped["ConclusionConfiguration"] = relationship(
         back_populates="study",

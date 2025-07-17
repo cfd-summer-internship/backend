@@ -5,12 +5,14 @@ from fastapi.responses import StreamingResponse
 from db.client import get_db_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.uploaded_files_model import UploadedFiles
-from schemas.study_config_response_schema import StudyConfigResponse
+from schemas.study_config_response_schema import StudyConfigResponse, SurveyQuestions
 from services.study_retrieval_service import (
     get_config_file,
     get_study_id_list,
     get_study_id,
     get_file_from_db,
+    get_survey_id,
+    get_survey_questions_from_db,
 )
 
 router = APIRouter(prefix="/study", tags=["Study"])
@@ -69,10 +71,22 @@ async def get_study_debrief(
     )
 
 
+@router.get("/survey/{study_id}", response_model=SurveyQuestions)
+async def get_survey_questions(
+    study_id: uuid.UUID,
+    conn: AsyncSession = Depends(get_db_session),
+) -> SurveyQuestions:
+    """Returns Survey Questions"""
+    survey_id = await get_survey_id(study_id, conn)
+    return await get_survey_questions_from_db(
+        survey_id, conn
+    )
+
+
 @router.get("/export/{study_id}", response_model=StudyConfigResponse)
 async def export_config_file(
     study_id: uuid.UUID,
     conn: AsyncSession = Depends(get_db_session),
 ) -> StudyConfigResponse:
     """Returns Full Configuration File as a JSON"""
-    return await get_config_file(study_id=study_id, conn=conn)
+    return await get_config_file(study_id, conn)

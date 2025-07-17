@@ -23,9 +23,15 @@ class ExperimentPhase(LearningPhase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class SurveyQuestions(BaseModel):
+    questions: list[str]
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ConclusionPhase(BaseModel):
     show_results: bool
     has_survey: bool
+    questions: list[str]
 
     model_config = ConfigDict(from_attributes=True)
 

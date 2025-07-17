@@ -4,6 +4,8 @@ from fastapi import HTTPException
 
 from models.conclusion_config_model import ConclusionConfiguration
 from models.study_config_model import StudyConfiguration
+from models.user_survey_config_model import UserSurveyConfig
+from models.survey_questions_model import SurveyQuestion
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.experiment_config_model import ExperimentConfiguration
@@ -17,6 +19,7 @@ from schemas.study_config_request_schema import (
     WaitPhaseRequest,
     ExperimentPhaseRequest,
     ConclusionPhaseRequest,
+    SurveyQuestionsRequest
 )
 
 
@@ -40,7 +43,12 @@ async def add_study(config: StudyConfigRequest, conn: AsyncSession):
         await save_wait_phase(new_study.id, config.wait, conn)
         await save_experiment_phase(new_study.id, config.experiment, conn)
         await save_conclusion_phase(new_study.id, config.conclusion, conn)
-
+       
+        if config.conclusion.has_survey:
+            survey_id = uuid.uuid4() #generate UUID
+            await save_user_survey(survey_id,new_study.id, conn)
+            await save_survey_questions(survey_id, config.conclusion.questions, conn)
+       
         await conn.commit()
         return new_study.id
 
@@ -94,12 +102,35 @@ async def save_conclusion_phase(
         ConclusionConfiguration(
             study_config_id=study_id,
             show_results=data.show_results,
-            survey=data.has_survey,
+            has_survey=data.has_survey,
         )
     )
 
 
-async def save_file_uploads(study_id: uuid.UUID, files: FileUploadsRequest, conn):
+async def save_survey_questions(
+    survey_id: uuid.UUID, data: SurveyQuestionsRequest, conn: AsyncSession):
+    """Inserts Conclusion Survey Questions into database."""
+    for i,question_text in enumerate(data):
+        conn.add(
+            SurveyQuestion(
+                id=i+1,
+                survey_config_id=survey_id,
+                text=question_text
+            )
+        )
+
+
+async def save_user_survey(
+    survey_id: uuid.UUID, study_id: uuid.UUID, conn: AsyncSession):
+    """Inserts User Survey Config into database"""
+    conn.add(
+        UserSurveyConfig(
+            id = survey_id,
+            study_config_id=study_id)
+        )
+
+
+async def save_file_uploads(study_id: uuid.UUID, files: FileUploadsRequest, conn: AsyncSession):
     """Inserts Files into database.
 
     Saves the filename as well as the raw file bytes as a BYTEA datatype."""

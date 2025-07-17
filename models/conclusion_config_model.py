@@ -26,10 +26,11 @@ class ConclusionConfiguration(Base):
         nullable=False
     )
 
-    survey: Mapped[bool] = mapped_column(
+    has_survey: Mapped[bool] = mapped_column(
         Boolean,
         nullable=True
     )
+
 
     #REFERENCE TO STUDY CONFIG
     study : Mapped[StudyConfiguration]=relationship(back_populates="conclusion")

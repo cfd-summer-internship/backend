@@ -1,5 +1,6 @@
 from fastapi import UploadFile
 from pydantic import BaseModel, ConfigDict
+from typing import Optional
 
 from models.enums import DisplayMethodEnum, ResponseMethodEnum
 
@@ -26,9 +27,14 @@ class ExperimentPhaseRequest(LearningPhaseRequest):
     response_method: ResponseMethodEnum
 
 
+class SurveyQuestionsRequest(BaseModel):
+    survey_questions: list[str]
+
+
 class ConclusionPhaseRequest(BaseModel):
     show_results: bool
     has_survey: bool
+    questions: Optional[list[str]] = None   
 
 
 class FileUploadsRequest(BaseModel):
