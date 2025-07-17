@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.study_config_model import StudyConfiguration
 from models.uploaded_files_model import UploadedFiles
+from models.enums import ImageListColumn
 from schemas.study_config_response_schema import StudyConfigResponse
 from schemas.study_config_response_schema import (
     FileUploads,
@@ -98,6 +99,19 @@ async def get_file_from_db(
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
+async def get_image_list(study_id:uuid.UUID, conn:AsyncSession, column:ImageListColumn) -> list[str]:
+    image_list_column = getattr(UploadedFiles,column)
+    try:
+        stmt = (
+            select(image_list_column)
+            .execution_options(populate_existing=True)
+            .where(UploadedFiles.study_config_id == study_id)
+        )
+        results = await conn.execute(stmt)
+        image_list = results.scalars().one_or_none()
+        return image_list
+    except Exception as e:
+        raise HTTPException(404, detail=str(e))
 
 async def get_config_file(
     study_id: uuid.UUID, conn: AsyncSession

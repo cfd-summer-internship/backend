@@ -8,3 +8,7 @@ class DisplayMethodEnum(str,Enum):
 class ResponseMethodEnum(str,Enum):
     BINARY = "binary"
     GRADIENT = "gradient"
+
+class ImageListColumn(str,Enum):
+    LEARNING = "learning"
+    EXPERIMENT = "experiment"

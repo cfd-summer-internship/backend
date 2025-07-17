@@ -28,4 +28,4 @@ dev = [
 ]
 
 [tool.ruff]
-extend-exclude = ["alembic/*","models/all_models.py"]
+extend-exclude = ["alembic/*","models/all_models.py","tests/*"]

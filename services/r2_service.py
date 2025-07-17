@@ -43,16 +43,19 @@ def upload_file_to_bucket(
     except Exception as e:
         print("Error Uploading: ", str(e))
         raise HTTPException(500, detail=str(e))
-    
-def upload_zip_to_bucket(
-    client:BaseClient, 
-    bucket:str, 
-    object_name:str,
-    file: UploadFile):
+
+def generate_url_list(client:BaseClient, bucket:str, image_list:list[str], expiration=3600) -> list[str]:
     try:
-        key = f'{object_name}' #Might insert a custom path here if needed
-        client.upload_fileobj(file.file,bucket,key)
-        return {"status":"ok"}
-    except Exception as e:
-        print("Error Uploading: ", str(e))
-        raise HTTPException(500, detail=str(e))
+        generated_urls = []
+        for image_key in image_list:
+            response = client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket':bucket, 'Key':image_key},
+                ExpiresIn=expiration
+            )
+            if response:
+                generated_urls.append(response)
+        return generated_urls
+    except ClientError as e:
+        print("Error Fetching: ", str(e))
+        raise HTTPException(404, detail=str(e))
