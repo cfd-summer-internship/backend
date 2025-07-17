@@ -10,5 +10,5 @@ class ResponseMethodEnum(str,Enum):
     GRADIENT = "gradient"
 
 class ImageListColumn(str,Enum):
-    LEARNING = "learning"
-    EXPERIMENT = "experiment"
+    LEARNING = "learning_image_list"
+    EXPERIMENT = "experiment_image_list"

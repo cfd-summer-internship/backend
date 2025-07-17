@@ -100,7 +100,7 @@ async def get_file_from_db(
         raise HTTPException(status_code=404, detail=str(e))
 
 async def get_image_list(study_id:uuid.UUID, conn:AsyncSession, column:ImageListColumn) -> list[str]:
-    image_list_column = getattr(UploadedFiles,column)
+    image_list_column = getattr(UploadedFiles,column.value)
     try:
         stmt = (
             select(image_list_column)
