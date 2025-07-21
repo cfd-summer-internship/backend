@@ -37,7 +37,7 @@ async def test_get_learning_phase():
         assert "display_duration" in json_data
         assert "pause_duration" in json_data
         assert "display_method" in json_data
-
+        assert "image_urls" in json_data
 
 @pytest.mark.asyncio
 async def test_get_waiting_phase():
@@ -52,7 +52,6 @@ async def test_get_waiting_phase():
         assert response.status_code == 200
         json_data = response.json()
         assert "display_duration" in json_data
-
 
 @pytest.mark.asyncio
 async def test_get_experiment_phase():

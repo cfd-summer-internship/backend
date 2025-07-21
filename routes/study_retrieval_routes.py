@@ -5,13 +5,16 @@ from fastapi.responses import StreamingResponse
 from db.client import get_db_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.uploaded_files_model import UploadedFiles
+from services.r2_client import get_r2_client
+from settings import Settings, get_settings
+from botocore.client import BaseClient
 from schemas.study_config_response_schema import StudyConfigResponse
 from services.study_retrieval_service import (
     get_config_file,
     get_study_id_list,
     get_study_id,
     get_file_from_db,
-    get_learning_phase_from_db,
+    get_learning_phase_data,
     get_waiting_phase_from_db,
     get_experiment_phase_from_db,
 )
@@ -85,9 +88,11 @@ async def export_config_file(
 async def get_learning_phase(
     study_id: uuid.UUID,
     conn: AsyncSession = Depends(get_db_session),
+    client: BaseClient = Depends(get_r2_client),
+    settings: Settings = Depends(get_settings)
 ):
     """Returns the Learning Phase configuration for the study."""
-    return await get_learning_phase_from_db(study_id=study_id, conn=conn)
+    return await get_learning_phase_data(study_id=study_id, conn=conn, client=client, settings=settings)
 
 
 @router.get("/waiting_phase/{study_id}")
