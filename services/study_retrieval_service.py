@@ -6,6 +6,8 @@ from sqlalchemy.orm import selectinload
 from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from settings import Settings
+from botocore.client import BaseClient
 
 from models.study_config_model import StudyConfiguration
 from models.uploaded_files_model import UploadedFiles
@@ -18,6 +20,7 @@ from schemas.study_config_response_schema import (
     ExperimentPhase,
     ConclusionPhase,
 )
+from services.r2_service import generate_url_list
 
 
 async def get_study_id_list(conn: AsyncSession) -> list[uuid.UUID]:
@@ -33,7 +36,6 @@ async def get_study_id_list(conn: AsyncSession) -> list[uuid.UUID]:
     except Exception as e:
         raise HTTPException(404, detail=str(e))
 
-
 async def get_study_id(study_code: str, conn: AsyncSession) -> uuid.UUID:
     """Returns the first matching Study ID from a submitted 6-digit study code"""
     try:
@@ -45,7 +47,6 @@ async def get_study_id(study_code: str, conn: AsyncSession) -> uuid.UUID:
                 return study.id
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
-
 
 async def get_file_from_db(
     study_id: uuid.UUID,
@@ -201,13 +202,18 @@ async def get_learning_phase_from_db(
     study = result.scalar_one_or_none()
     if not study or not study.learning:
         raise HTTPException(status_code=404, detail="Learning phase not found")
-    learning = study.learning
+    return study.learning
+
+async def get_learning_phase_data(study_id: uuid.UUID, conn: AsyncSession, client:BaseClient, settings:Settings):
+    learning = await get_learning_phase_from_db(study_id,conn)
+    image_list= await get_image_list(study_id,conn,ImageListColumn.LEARNING)
+    generated_urls = generate_url_list(client, settings.r2_bucket_name,image_list)
     return LearningPhase(
         display_duration=learning.display_duration,
         pause_duration=learning.pause_duration,
         display_method=learning.display_method,
+        image_urls=generated_urls
     )
-
 
 async def get_waiting_phase_from_db(
     study_id: uuid.UUID, conn: AsyncSession
@@ -225,7 +231,6 @@ async def get_waiting_phase_from_db(
     return WaitPhase(
         display_duration=wait.display_duration,
     )
-
 
 async def get_experiment_phase_from_db(
     study_id: uuid.UUID, conn: AsyncSession

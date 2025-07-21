@@ -10,6 +10,7 @@ class LearningPhase(BaseModel):
     display_duration: int
     pause_duration: int
     display_method: DisplayMethodEnum
+    image_urls: list[str]
     model_config = ConfigDict(from_attributes=True)
 
 
