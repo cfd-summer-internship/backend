@@ -10,6 +10,7 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import ARRAY, TEXT
 
 # revision identifiers, used by Alembic.
 revision: str = '15d76b366a4c'
@@ -48,8 +49,8 @@ def upgrade() -> None:
     sa.Column('study_config_id', sa.UUID(), nullable=False),
     sa.Column('consent_form', sa.String(), nullable=False),
     sa.Column('consent_form_bytes', postgresql.BYTEA(), nullable=False),
-    sa.Column('learning_image_list', sa.String(), nullable=False),
-    sa.Column('experiment_image_list', sa.String(), nullable=False),
+    sa.Column('learning_image_list', ARRAY(TEXT), nullable=False),
+    sa.Column('experiment_image_list', ARRAY(TEXT), nullable=False),
     sa.Column('study_instructions', sa.String(), nullable=False),
     sa.Column('study_instructions_bytes', postgresql.BYTEA(), nullable=False),
     sa.Column('study_debrief', sa.String(), nullable=False),

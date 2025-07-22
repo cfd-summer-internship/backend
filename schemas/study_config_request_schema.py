@@ -38,11 +38,11 @@ class ConclusionPhaseRequest(BaseModel):
 
 
 class FileUploadsRequest(BaseModel):
-    consent_form: UploadFile
-    study_instructions: UploadFile
-    learning_phase_list: UploadFile
-    experiment_phase_list: UploadFile
-    study_debrief: UploadFile
+    consent_form: UploadFile #PDF
+    study_instructions: UploadFile #PDF
+    learning_phase_list: UploadFile #CSV
+    experiment_phase_list: UploadFile #CSV
+    study_debrief: UploadFile #PDF
 
 
 class StudyConfigRequest(BaseModel):

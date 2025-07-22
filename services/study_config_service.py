@@ -1,6 +1,6 @@
 import uuid
-
-from fastapi import HTTPException
+import csv
+from fastapi import HTTPException, UploadFile
 
 from models.conclusion_config_model import ConclusionConfiguration
 from models.study_config_model import StudyConfiguration
@@ -54,6 +54,7 @@ async def add_study(config: StudyConfigRequest, conn: AsyncSession):
 
     except Exception as e:
         await conn.rollback()
+        print("Insertion Error: ",str(e))
         raise HTTPException(500, detail=str(e))
 
 
@@ -141,9 +142,25 @@ async def save_file_uploads(study_id: uuid.UUID, files: FileUploadsRequest, conn
             consent_form_bytes=await files.consent_form.read(),
             study_instructions=files.study_instructions.filename,
             study_instructions_bytes=await files.study_instructions.read(),
-            learning_image_list=files.learning_phase_list.filename,
-            experiment_image_list=files.experiment_phase_list.filename,
+            learning_image_list=await extract_from_csv(files.learning_phase_list),
+            experiment_image_list=await extract_from_csv(files.experiment_phase_list),
             study_debrief=files.study_debrief.filename,
             study_debrief_bytes=await files.study_debrief.read(),
         )
     )
+
+#PERHAPS USE ONE FILE INSTEAD OF TWO AND A FLAG TO INDICATE WHAT TYPE IT IS
+#THEN EXTRACT BASED OFF OF THE ROW?
+async def extract_from_csv(file: UploadFile):
+    """Extracts a list of strings from an uploaded csv file"""
+    content = await file.read()
+    lines = content.decode("utf-8").splitlines()
+    reader = csv.reader(lines)
+    image_list:list[str]=[]
+    for row in reader:
+        if row:
+            image_list.extend(row)
+
+    return image_list
+
+    

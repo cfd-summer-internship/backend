@@ -6,6 +6,10 @@ from db.client import get_db_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.uploaded_files_model import UploadedFiles
 from schemas.study_config_response_schema import StudyConfigResponse, SurveyQuestions
+from services.r2_client import get_r2_client
+from settings import Settings, get_settings
+from botocore.client import BaseClient
+from schemas.study_config_response_schema import StudyConfigResponse
 from services.study_retrieval_service import (
     get_config_file,
     get_study_id_list,
@@ -13,6 +17,9 @@ from services.study_retrieval_service import (
     get_file_from_db,
     get_survey_id,
     get_survey_questions_from_db,
+    get_learning_phase_data,
+    get_waiting_phase_from_db,
+    get_experiment_phase_from_db,
 )
 
 router = APIRouter(prefix="/study", tags=["Study"])
@@ -89,4 +96,33 @@ async def export_config_file(
     conn: AsyncSession = Depends(get_db_session),
 ) -> StudyConfigResponse:
     """Returns Full Configuration File as a JSON"""
-    return await get_config_file(study_id, conn)
+    return await get_config_file(study_id=study_id, conn=conn)
+
+
+@router.get("/learning_phase/{study_id}")
+async def get_learning_phase(
+    study_id: uuid.UUID,
+    conn: AsyncSession = Depends(get_db_session),
+    client: BaseClient = Depends(get_r2_client),
+    settings: Settings = Depends(get_settings)
+):
+    """Returns the Learning Phase configuration for the study."""
+    return await get_learning_phase_data(study_id=study_id, conn=conn, client=client, settings=settings)
+
+
+@router.get("/waiting_phase/{study_id}")
+async def get_waiting_phase(
+    study_id: uuid.UUID,
+    conn: AsyncSession = Depends(get_db_session),
+):
+    """Returns the Waiting Phase configuration for the study"""
+    return await get_waiting_phase_from_db(study_id=study_id, conn=conn)
+
+
+@router.get("/experiment_phase/{study_id}")
+async def get_experiment_phase(
+    study_id: uuid.UUID,
+    conn: AsyncSession = Depends(get_db_session),
+):
+    """Returns the Experiment Phase configuration for the study."""
+    return await get_experiment_phase_from_db(study_id=study_id, conn=conn)

@@ -6,11 +6,14 @@ from sqlalchemy.orm import selectinload
 from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from settings import Settings
+from botocore.client import BaseClient
 
 from models.study_config_model import StudyConfiguration
 from models.survey_questions_model import SurveyQuestion
 from models.uploaded_files_model import UploadedFiles
 from models.user_survey_config_model import UserSurveyConfig
+from models.enums import ImageListColumn
 from schemas.study_config_response_schema import StudyConfigResponse
 from schemas.study_config_response_schema import (
     FileUploads,
@@ -20,6 +23,7 @@ from schemas.study_config_response_schema import (
     ConclusionPhase, 
     SurveyQuestions
 )
+from services.r2_service import generate_url_list
 
 
 async def get_study_id_list(conn: AsyncSession) -> list[uuid.UUID]:
@@ -35,7 +39,6 @@ async def get_study_id_list(conn: AsyncSession) -> list[uuid.UUID]:
     except Exception as e:
         raise HTTPException(404, detail=str(e))
 
-
 async def get_study_id(study_code: str, conn: AsyncSession) -> uuid.UUID:
     """Returns the first matching Study ID from a submitted 6-digit study code"""
     try:
@@ -47,7 +50,6 @@ async def get_study_id(study_code: str, conn: AsyncSession) -> uuid.UUID:
                 return study.id
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
-
 
 async def get_file_from_db(
     study_id: uuid.UUID,
@@ -101,6 +103,19 @@ async def get_file_from_db(
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
+async def get_image_list(study_id:uuid.UUID, conn:AsyncSession, column:ImageListColumn) -> list[str]:
+    image_list_column = getattr(UploadedFiles,column.value)
+    try:
+        stmt = (
+            select(image_list_column)
+            .execution_options(populate_existing=True)
+            .where(UploadedFiles.study_config_id == study_id)
+        )
+        results = await conn.execute(stmt)
+        image_list = results.scalars().one_or_none()
+        return image_list
+    except Exception as e:
+        raise HTTPException(404, detail=str(e))
 
 async def get_config_file(
     study_id: uuid.UUID, conn: AsyncSession,
@@ -184,7 +199,6 @@ async def get_config_file(
         )
     )
 
-
 async def get_survey_id(
         study_id:uuid.UUID, conn:AsyncSession        
 ) -> uuid.UUID:
@@ -199,7 +213,6 @@ async def get_survey_id(
     
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
-    
     
 
 async def get_survey_questions_from_db(
@@ -218,4 +231,65 @@ async def get_survey_questions_from_db(
     except Exception as e:
         print(str(e))  
     
-    
+
+async def get_learning_phase_from_db(
+    study_id: uuid.UUID, conn: AsyncSession
+) -> LearningPhase:
+    stmt = (
+        select(StudyConfiguration)
+        .options(selectinload(StudyConfiguration.learning))
+        .where(StudyConfiguration.id == study_id)
+    )
+    result = await conn.execute(stmt)
+    study = result.scalar_one_or_none()
+    if not study or not study.learning:
+        raise HTTPException(status_code=404, detail="Learning phase not found")
+    return study.learning
+
+async def get_learning_phase_data(study_id: uuid.UUID, conn: AsyncSession, client:BaseClient, settings:Settings):
+    learning = await get_learning_phase_from_db(study_id,conn)
+    image_list= await get_image_list(study_id,conn,ImageListColumn.LEARNING)
+    generated_urls = generate_url_list(client, settings.r2_bucket_name,image_list)
+    return LearningPhase(
+        display_duration=learning.display_duration,
+        pause_duration=learning.pause_duration,
+        display_method=learning.display_method,
+        image_urls=generated_urls
+    )
+
+async def get_waiting_phase_from_db(
+    study_id: uuid.UUID, conn: AsyncSession
+) -> WaitPhase:
+    stmt = (
+        select(StudyConfiguration)
+        .options(selectinload(StudyConfiguration.wait))
+        .where(StudyConfiguration.id == study_id)
+    )
+    result = await conn.execute(stmt)
+    study = result.scalar_one_or_none()
+    if not study or not study.wait:
+        raise HTTPException(status_code = 404, detail="Waiting phase not found")
+    wait = study.wait
+    return WaitPhase(
+        display_duration=wait.display_duration,
+    )
+
+async def get_experiment_phase_from_db(
+    study_id: uuid.UUID, conn: AsyncSession
+) -> ExperimentPhase:
+    stmt = (
+        select(StudyConfiguration)
+        .options(selectinload(StudyConfiguration.experiment))
+        .where(StudyConfiguration.id == study_id)
+    )
+    result = await conn.execute(stmt)
+    study = result.scalar_one_or_none()
+    if not study or not study.experiment:
+        raise HTTPException(status_code=404, detail="Experiment phase not found")
+    experiment = study.experiment
+    return ExperimentPhase(
+        display_duration=experiment.display_duration,
+        pause_duration=experiment.pause_duration,
+        display_method=experiment.display_method,
+        response_method=experiment.response_method,
+    )

@@ -1,9 +1,17 @@
+#STUDY
+import models.study_model
+#CONFIGURATION
 import models.study_config_model
-import models.user_survey_config_model
 import models.learning_config_model
 import models.waiting_config_model
 import models.experiment_config_model
 import models.conclusion_config_model
+#SURVEY
+import models.user_survey_config_model
 import models.survey_questions_model
 import models.survey_answers_model
+#FILES
 import models.uploaded_files_model
+#RESULTS
+import models.study_result_model
+import models.study_response_model

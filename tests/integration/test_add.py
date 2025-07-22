@@ -25,8 +25,8 @@ def test_study_config():
         files={
             "configFiles.consentForm" : ("Consent Form", open("tests/assets/Test File.pdf", "rb"), "application/pdf"),
             "configFiles.studyInstructions" : ("Study Instructions", open("tests/assets/Test File.pdf", "rb"), "application/pdf"),     
-            "configFiles.learningList" : ("Learning List", open("tests/assets/Test File.pdf", "rb"), "application/pdf"),  
-            "configFiles.experimentList" : ("Experiment List", open("tests/assets/Test File.pdf", "rb"), "application/pdf"), 
+            "configFiles.learningList" : ("Learning List", open("tests/assets/Test List.csv", "rb"), "application/pdf"),  
+            "configFiles.experimentList" : ("Experiment List", open("tests/assets/Test List.csv", "rb"), "application/pdf"), 
             "configFiles.studyDebrief" : ("Study Debrief", open("tests/assets/Test File.pdf", "rb"), "application/pdf"),
         }
     )

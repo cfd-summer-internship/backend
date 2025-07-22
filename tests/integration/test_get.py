@@ -26,7 +26,6 @@ async def test_get_study_config():
         parsed = StudyConfigResponse(**json_data)
         assert parsed
 
-
 @pytest.mark.asyncio
 async def test_get_survey_id() -> uuid.UUID:
     client = get_db_session()
@@ -47,7 +46,6 @@ async def test_get_survey_id() -> uuid.UUID:
         await session.aclose()
         assert result 
 
-
 @pytest.mark.asyncio
 async def test_get_survey_questions():
     async with AsyncClient(
@@ -56,9 +54,57 @@ async def test_get_survey_questions():
         study_response = await client.get("/study/study_ids")
         assert study_response.status_code == 200
         study_id = study_response.json()
-
+        
         response = await client.get(f"/study/survey/{study_id[1]}")
         assert response.status_code == 200
         json_data = response.json()
         parsed = SurveyQuestions(**json_data)
-        assert parsed        
+        assert parsed    
+        
+@pytest.mark.asyncio
+async def test_get_learning_phase():
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        study_response = await client.get("/study/study_ids")
+        assert study_response.status_code == 200
+        study_id = study_response.json()
+
+        response = await client.get(f"/study/learning_phase/{study_id[0]}")
+        assert response.status_code == 200
+        json_data = response.json()
+        assert "display_duration" in json_data
+        assert "pause_duration" in json_data
+        assert "display_method" in json_data
+        assert "image_urls" in json_data
+
+@pytest.mark.asyncio
+async def test_get_waiting_phase():
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        study_response = await client.get("/study/study_ids")
+        assert study_response.status_code == 200
+        study_id = study_response.json()
+
+        response = await client.get(f"/study/waiting_phase/{study_id[0]}")
+        assert response.status_code == 200
+        json_data = response.json()
+        assert "display_duration" in json_data
+
+@pytest.mark.asyncio
+async def test_get_experiment_phase():
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        study_response = await client.get("/study/study_ids")
+        assert study_response.status_code == 200
+        study_id = study_response.json()
+
+        response = await client.get(f"/study/experiment_phase/{study_id[0]}")
+        assert response.status_code == 200
+        json_data = response.json()
+        assert "display_duration" in json_data
+        assert "pause_duration" in json_data
+        assert "display_method" in json_data
+        assert "response_method" in json_data
