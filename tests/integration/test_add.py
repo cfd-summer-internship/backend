@@ -20,7 +20,7 @@ def test_study_config():
             "experiment.responseMethod" : "binary",
             "conclusion.showResults": "true",
             "conclusion.survey":"true",
-            "survey.questions": ["test", "test2"],
+            "survey.questions": ["testing", "testing2"],
         },
         files={
             "configFiles.consentForm" : ("Consent Form", open("tests/assets/Test File.pdf", "rb"), "application/pdf"),

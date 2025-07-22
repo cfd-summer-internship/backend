@@ -42,24 +42,18 @@ class StudyConfiguration(Base):
         uselist=False
     )
 
-    # survey: Mapped["SurveyQuestion"] = relationship(
-    #     back_populates="study",
-    #     cascade="all, delete-orphan",
-    #     uselist=False
-    # )
+    files: Mapped["UploadedFiles"] = relationship(
+            back_populates="study",
+            cascade="all, delete-orphan",
+            uselist=False
+        )
 
     conclusion: Mapped["ConclusionConfiguration"] = relationship(
         back_populates="study",
         cascade="all, delete-orphan",
         uselist=False
     )
-
-    files: Mapped["UploadedFiles"] = relationship(
-        back_populates="study",
-        cascade="all, delete-orphan",
-        uselist=False
-    )
-
+ 
     demographics: Mapped["UserSurveyConfig"] = relationship(
         back_populates="study",
         cascade="all, delete-orphan",

@@ -11,13 +11,14 @@ from models.study_config_model import StudyConfiguration
 from models.survey_questions_model import SurveyQuestion
 from models.uploaded_files_model import UploadedFiles
 from models.user_survey_config_model import UserSurveyConfig
-from schemas.study_config_response_schema import StudyConfigResponse, SurveyQuestions
+from schemas.study_config_response_schema import StudyConfigResponse
 from schemas.study_config_response_schema import (
     FileUploads,
     LearningPhase,
     WaitPhase,
     ExperimentPhase,
-    ConclusionPhase,
+    ConclusionPhase, 
+    SurveyQuestions
 )
 
 
@@ -126,7 +127,7 @@ async def get_config_file(
         HTTPException: 500: Missing file upload data
         HTTPException: 500: Missing phase configuration
     """
-    survey_id = get_survey_id(study_id, conn)
+    
     stmt = (
         select(StudyConfiguration)
         .options(
@@ -135,12 +136,11 @@ async def get_config_file(
             selectinload(StudyConfiguration.experiment),
             selectinload(StudyConfiguration.files),
             selectinload(StudyConfiguration.conclusion),
-            selectinload(SurveyQuestion.survey)
+            selectinload(StudyConfiguration.demographics)
+            .selectinload(UserSurveyConfig.questions)
         )
 
-        .where(StudyConfiguration.id == study_id, 
-               SurveyQuestion.survey_config_id == survey_id
-        )
+        .where(StudyConfiguration.id == study_id)     
     )
 
     result = await conn.execute(stmt)
@@ -177,15 +177,11 @@ async def get_config_file(
             display_method=study.experiment.display_method,
             response_method=study.experiment.response_method,
         ),
-        
-        survey=SurveyQuestions(
-            questions=SurveyQuestions.questions
-        ),
-
         conclusion=ConclusionPhase(
             show_results=study.conclusion.show_results,
-            has_survey=study.conclusion.has_survey
-        ),
+            has_survey=study.conclusion.has_survey,
+            questions=[question.text for question in study.demographics.questions] if study.conclusion.has_survey else None
+        )
     )
 
 

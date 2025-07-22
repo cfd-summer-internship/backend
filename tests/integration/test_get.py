@@ -1,6 +1,5 @@
 import sys
 import uuid
-from fastapi import Depends
 import pytest
 from db.client import get_db_session
 
@@ -9,8 +8,7 @@ sys.path.append("./")
 from main import app
 from httpx import ASGITransport, AsyncClient
 from schemas.study_config_response_schema import StudyConfigResponse, SurveyQuestions
-from services.study_retrieval_service import get_study_id, get_study_id_list, get_survey_id
-from sqlalchemy.ext.asyncio import AsyncSession
+from services.study_retrieval_service import get_study_id_list, get_survey_id
 
 
 @pytest.mark.asyncio
@@ -22,7 +20,7 @@ async def test_get_study_config():
         assert study_response.status_code == 200
         study_id = study_response.json()
 
-        response = await client.get(f"/study/export/{study_id[1]}")
+        response = await client.get(f"/study/export/{study_id[0]}")
         assert response.status_code == 200
         json_data = response.json()
         parsed = StudyConfigResponse(**json_data)

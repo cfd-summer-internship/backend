@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, ConfigDict
 from models.enums import DisplayMethodEnum, ResponseMethodEnum
 
@@ -31,7 +32,7 @@ class SurveyQuestions(BaseModel):
 class ConclusionPhase(BaseModel):
     show_results: bool
     has_survey: bool
-    questions: list[str]
+    questions: Optional[list[str]] = None
 
     model_config = ConfigDict(from_attributes=True)
 
