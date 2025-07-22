@@ -15,8 +15,7 @@ from services.study_retrieval_service import (
     get_study_id,
     get_file_from_db,
     get_learning_phase_data,
-    get_waiting_phase_from_db,
-    get_experiment_phase_from_db,
+    get_experiment_phase_from_db, get_experiment_phase_data,
 )
 
 router = APIRouter(prefix="/study", tags=["Study"])
@@ -95,13 +94,16 @@ async def get_learning_phase(
     return await get_learning_phase_data(study_id=study_id, conn=conn, client=client, settings=settings)
 
 
-@router.get("/waiting_phase/{study_id}")
-async def get_waiting_phase(
+@router.get("/experiment_phase_images/{study_id}")
+async def get_experiment_phase_images(
     study_id: uuid.UUID,
     conn: AsyncSession = Depends(get_db_session),
+    client: BaseClient = Depends(get_r2_client),
+    settings: Settings = Depends(get_settings)
 ):
-    """Returns the Waiting Phase configuration for the study"""
-    return await get_waiting_phase_from_db(study_id=study_id, conn=conn)
+    """ Returns the Experiment Phase configuration along with presigned URLs for experiment images. """
+    return await get_experiment_phase_data(study_id, conn, client, settings)
+
 
 
 @router.get("/experiment_phase/{study_id}")
