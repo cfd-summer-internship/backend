@@ -9,7 +9,6 @@ from schemas.study_config_response_schema import StudyConfigResponse, SurveyQues
 from services.r2_client import get_r2_client
 from settings import Settings, get_settings
 from botocore.client import BaseClient
-from schemas.study_config_response_schema import StudyConfigResponse
 from services.study_retrieval_service import (
     get_config_file,
     get_study_id_list,
