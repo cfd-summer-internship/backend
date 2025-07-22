@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from db.client import get_db_session
-from schemas.study_config_response_schema import MessageResponse
+from schemas.study_config_response_schema import StudyCodeReponse
 from services.study_config_service import add_study
 from services.form_parsers import (
     get_file_uploads,
@@ -24,7 +24,7 @@ from schemas.study_config_request_schema import (
 router = APIRouter(prefix="/config", tags=["Config"])
 
 
-@router.post("/add", response_model=MessageResponse)
+@router.post("/save", response_model=StudyCodeReponse)
 async def add_configuration(
     learning: LearningPhaseRequest = Depends(get_learning_phase),
     waiting: WaitPhaseRequest = Depends(get_wait_phase),
@@ -46,5 +46,5 @@ async def add_configuration(
         files=files,
     )
 
-    await add_study(config=study, conn=conn)
-    return {"message": "Configuration added succesfully"}
+    study_code = await add_study(config=study, conn=conn)
+    return {"study_code": f"{study_code}"}

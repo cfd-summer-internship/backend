@@ -50,7 +50,8 @@ async def add_study(config: StudyConfigRequest, conn: AsyncSession):
             await save_survey_questions(survey_id, config.conclusion.questions, conn)
        
         await conn.commit()
-        return new_study.id
+        study_code = str(new_study.id)[-6:]
+        return study_code
 
     except Exception as e:
         await conn.rollback()
@@ -144,8 +145,8 @@ async def save_file_uploads(study_id: uuid.UUID, files: FileUploadsRequest, conn
             study_instructions_bytes=await files.study_instructions.read(),
             learning_image_list=await extract_from_csv(files.learning_phase_list),
             experiment_image_list=await extract_from_csv(files.experiment_phase_list),
-            study_debrief=files.study_debrief.filename,
-            study_debrief_bytes=await files.study_debrief.read(),
+            study_debrief=files.study_debrief.filename if files.study_debrief else None,
+            study_debrief_bytes=await files.study_debrief.read() if files.study_debrief else None,
         )
     )
 

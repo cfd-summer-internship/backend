@@ -42,7 +42,7 @@ class FileUploadsRequest(BaseModel):
     study_instructions: UploadFile #PDF
     learning_phase_list: UploadFile #CSV
     experiment_phase_list: UploadFile #CSV
-    study_debrief: UploadFile #PDF
+    study_debrief: Optional[UploadFile] = None #PDF
 
 
 class StudyConfigRequest(BaseModel):

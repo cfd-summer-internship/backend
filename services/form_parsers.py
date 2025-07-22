@@ -1,3 +1,4 @@
+from typing import Optional
 from models.enums import DisplayMethodEnum, ResponseMethodEnum
 from schemas.study_config_request_schema import LearningPhaseRequest, FileUploadsRequest, WaitPhaseRequest, ExperimentPhaseRequest, \
     ConclusionPhaseRequest
@@ -42,7 +43,7 @@ def get_experiment_phase(
 def get_conclusion_phase(
         showResults: bool = Form(..., alias="conclusion.showResults"),
         survey: bool = Form(..., alias="conclusion.survey"),
-        surveyQuestions: list[str] = Form(..., alias="survey.questions")
+        surveyQuestions: Optional[list[str]] = Form(None, alias="survey.questions")
 ):
     return ConclusionPhaseRequest(
         show_results=showResults,
@@ -56,7 +57,7 @@ def get_file_uploads(
         studyInstructions: UploadFile = File(..., alias="configFiles.studyInstructions"),
         learningList: UploadFile = File(..., alias="configFiles.learningList"),
         experimentList: UploadFile = File(..., alias="configFiles.experimentList"),
-        studyDebrief: UploadFile = File(..., alias="configFiles.studyDebrief"),
+        studyDebrief: Optional[UploadFile] = File(None, alias="configFiles.studyDebrief"),
 ):
     return FileUploadsRequest(
         consent_form=consentForm,#file_validator.validate_file_type(consentForm),
