@@ -19,7 +19,8 @@ def test_study_config():
             "experiment.displayMethod" : "random",
             "experiment.responseMethod" : "binary",
             "conclusion.showResults": "true",
-            "conclusion.survey":"false"
+            "conclusion.survey":"true",
+            "survey.questions": ["testing", "testing2"],
         },
         files={
             "configFiles.consentForm" : ("Consent Form", open("tests/assets/Test File.pdf", "rb"), "application/pdf"),
@@ -28,6 +29,6 @@ def test_study_config():
             "configFiles.experimentList" : ("Experiment List", open("tests/assets/Test List.csv", "rb"), "application/pdf"), 
             "configFiles.studyDebrief" : ("Study Debrief", open("tests/assets/Test File.pdf", "rb"), "application/pdf"),
         }
-                           )
+    )
     assert response.status_code == 200
     assert response.json()["message"] == "Configuration added succesfully"

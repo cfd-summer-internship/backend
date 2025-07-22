@@ -10,7 +10,9 @@ from settings import Settings
 from botocore.client import BaseClient
 
 from models.study_config_model import StudyConfiguration
+from models.survey_questions_model import SurveyQuestion
 from models.uploaded_files_model import UploadedFiles
+from models.user_survey_config_model import UserSurveyConfig
 from models.enums import ImageListColumn
 from schemas.study_config_response_schema import StudyConfigResponse
 from schemas.study_config_response_schema import (
@@ -18,7 +20,8 @@ from schemas.study_config_response_schema import (
     LearningPhase,
     WaitPhase,
     ExperimentPhase,
-    ConclusionPhase,
+    ConclusionPhase, 
+    SurveyQuestions
 )
 from services.r2_service import generate_url_list
 
@@ -115,7 +118,8 @@ async def get_image_list(study_id:uuid.UUID, conn:AsyncSession, column:ImageList
         raise HTTPException(404, detail=str(e))
 
 async def get_config_file(
-    study_id: uuid.UUID, conn: AsyncSession
+    study_id: uuid.UUID, conn: AsyncSession,
+    
 ) -> StudyConfigResponse:
     """
     Returns Configuration File
@@ -138,17 +142,20 @@ async def get_config_file(
         HTTPException: 500: Missing file upload data
         HTTPException: 500: Missing phase configuration
     """
+    
     stmt = (
         select(StudyConfiguration)
         .options(
             selectinload(StudyConfiguration.learning),
             selectinload(StudyConfiguration.wait),
             selectinload(StudyConfiguration.experiment),
-            # selectinload(StudyConfiguration.survey),
             selectinload(StudyConfiguration.files),
             selectinload(StudyConfiguration.conclusion),
+            selectinload(StudyConfiguration.demographics)
+            .selectinload(UserSurveyConfig.questions)
         )
-        .where(StudyConfiguration.id == study_id)
+
+        .where(StudyConfiguration.id == study_id)     
     )
 
     result = await conn.execute(stmt)
@@ -161,6 +168,7 @@ async def get_config_file(
         raise HTTPException(status_code=500, detail="Missing file upload data.")
     if not study.learning or not study.wait or not study.experiment:
         raise HTTPException(status_code=500, detail="Missing phase configuration.")
+  
 
     return StudyConfigResponse(
         files=FileUploads(
@@ -186,9 +194,43 @@ async def get_config_file(
         ),
         conclusion=ConclusionPhase(
             show_results=study.conclusion.show_results,
-            has_survey=study.conclusion.survey,
-        ),
+            has_survey=study.conclusion.has_survey,
+            questions=[question.text for question in study.demographics.questions] if study.conclusion.has_survey else None
+        )
     )
+
+async def get_survey_id(
+        study_id:uuid.UUID, conn:AsyncSession        
+) -> uuid.UUID:
+    """Returns matching Survey ID from corresponding Study ID"""
+    try:
+        stmt = (
+            select(UserSurveyConfig.id)
+            .where(UserSurveyConfig.study_config_id == study_id)
+        )
+        result = await conn.execute(stmt)
+        return result.scalar_one_or_none()
+    
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    
+
+async def get_survey_questions_from_db(
+        survey_id:uuid.UUID, conn:AsyncSession
+) -> SurveyQuestions:
+    """Returns Survey Questions"""
+    try:
+        stmt = (
+            select(SurveyQuestion.text)
+            .where(SurveyQuestion.survey_config_id == survey_id)
+        )
+        result = await conn.execute(stmt)
+        survey_questions = result.scalars().all()
+        return SurveyQuestions(questions=survey_questions)
+
+    except Exception as e:
+        print(str(e))  
+    
 
 async def get_learning_phase_from_db(
     study_id: uuid.UUID, conn: AsyncSession

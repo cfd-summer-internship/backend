@@ -29,7 +29,6 @@ def upgrade() -> None:
                existing_type=postgresql.ARRAY(sa.TEXT()),
                type_=sa.ARRAY(sa.String()),
                existing_nullable=False)
-    op.drop_constraint(op.f('survey_question_survey_config_id_key'), 'survey_question', type_='unique')
     # ### end Alembic commands ###
 
 
