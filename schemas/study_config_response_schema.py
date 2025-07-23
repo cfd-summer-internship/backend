@@ -6,6 +6,8 @@ from models.enums import DisplayMethodEnum, ResponseMethodEnum
 class MessageResponse(BaseModel):
     message: str
 
+class StudyCodeReponse(BaseModel):
+    study_code:str
 
 class LearningPhase(BaseModel):
     display_duration: int

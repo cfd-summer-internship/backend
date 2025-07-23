@@ -6,9 +6,9 @@ from main import app
 
 client = TestClient(app)
 
-def test_study_config():
+def test_save_study_config():
     response = client.post(
-        "/config/add",
+        "/config/save",
         data={
             "learning.displayDuration" : "1",
             "learning.pauseDuration" : "1",

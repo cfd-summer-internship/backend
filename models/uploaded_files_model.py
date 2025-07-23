@@ -30,9 +30,9 @@ class UploadedFiles(Base):
 
     study_instructions_bytes: Mapped[BYTEA] = mapped_column(BYTEA, nullable=False)
 
-    study_debrief: Mapped[str] = mapped_column(String, nullable=False)
+    study_debrief: Mapped[str] = mapped_column(String, nullable=True)
 
-    study_debrief_bytes: Mapped[BYTEA] = mapped_column(BYTEA, nullable=False)
+    study_debrief_bytes: Mapped[BYTEA] = mapped_column(BYTEA, nullable=True)
 
     # REFERENCE TO STUDY CONFIG
     study: Mapped[StudyConfiguration] = relationship(back_populates="files")
