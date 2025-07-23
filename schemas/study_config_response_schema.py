@@ -13,7 +13,7 @@ class LearningPhase(BaseModel):
     display_duration: int
     pause_duration: int
     display_method: DisplayMethodEnum
-    image_urls: list[str]
+    images: list[str]
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -43,9 +43,7 @@ class ConclusionPhase(BaseModel):
 class FileUploads(BaseModel):
     consent_form: str
     study_instruction: str
-    learning_image_list: str
-    experiment_image_list: str
-    study_debrief: str
+    study_debrief: Optional[str]
     model_config = ConfigDict(from_attributes=True)
 
 

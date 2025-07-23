@@ -174,14 +174,13 @@ async def get_config_file(
         files=FileUploads(
             consent_form=study.files.consent_form,
             study_instruction=study.files.study_instructions,
-            learning_image_list=study.files.learning_image_list,
-            experiment_image_list=study.files.experiment_image_list,
             study_debrief=study.files.study_debrief,
         ),
         learning=LearningPhase(
             display_duration=study.learning.display_duration,
             pause_duration=study.learning.pause_duration,
             display_method=study.learning.display_method,
+            images=study.files.learning_image_list
         ),
         wait=WaitPhase(
             display_duration=study.wait.display_duration,
@@ -190,6 +189,7 @@ async def get_config_file(
             display_duration=study.experiment.display_duration,
             pause_duration=study.experiment.pause_duration,
             display_method=study.experiment.display_method,
+            images=study.files.experiment_image_list,
             response_method=study.experiment.response_method,
         ),
         conclusion=ConclusionPhase(
@@ -254,7 +254,7 @@ async def get_learning_phase_data(study_id: uuid.UUID, conn: AsyncSession, clien
         display_duration=learning.display_duration,
         pause_duration=learning.pause_duration,
         display_method=learning.display_method,
-        image_urls=generated_urls
+        images=generated_urls
     )
 
 async def get_waiting_phase_from_db(
