@@ -191,6 +191,7 @@ async def get_config_file(
             pause_duration=study.experiment.pause_duration,
             display_method=study.experiment.display_method,
             response_method=study.experiment.response_method,
+            image_urls=[]
         ),
         conclusion=ConclusionPhase(
             show_results=study.conclusion.show_results,
@@ -292,4 +293,5 @@ async def get_experiment_phase_from_db(
         pause_duration=experiment.pause_duration,
         display_method=experiment.display_method,
         response_method=experiment.response_method,
+        image_urls=[]
     )

@@ -43,7 +43,7 @@ def upgrade() -> None:
     op.create_table('study_response',
     sa.Column('study_results_id', sa.UUID(), nullable=False),
     sa.Column('image_id', sa.String(), nullable=False),
-    sa.Column('reponse_time', sa.Float(), nullable=False),
+    sa.Column('response_time', sa.Float(), nullable=False),
     sa.Column('answer', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['study_results_id'], ['study_results.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('study_results_id'),
