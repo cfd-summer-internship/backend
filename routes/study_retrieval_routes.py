@@ -117,3 +117,4 @@ async def get_experiment_phase_images(
 ):
     """ Returns the Experiment Phase configuration along with presigned URLs for experiment images. """
     return await get_experiment_phase_data(study_id, conn, client, settings)
+
