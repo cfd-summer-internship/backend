@@ -5,10 +5,11 @@ from fastapi.responses import StreamingResponse
 from db.client import get_db_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.uploaded_files_model import UploadedFiles
-from schemas.study_config_response_schema import StudyConfigResponse, SurveyQuestions
+from schemas.study_config_response_schema import SurveyQuestions
 from services.r2_client import get_r2_client
 from settings import Settings, get_settings
 from botocore.client import BaseClient
+from schemas.study_config_response_schema import StudyConfigResponse
 from services.study_retrieval_service import (
     get_config_file,
     get_study_id_list,
@@ -17,8 +18,7 @@ from services.study_retrieval_service import (
     get_survey_id,
     get_survey_questions_from_db,
     get_learning_phase_data,
-    get_waiting_phase_from_db,
-    get_experiment_phase_from_db,
+    get_experiment_phase_data, get_waiting_phase_from_db,
 )
 
 router = APIRouter(prefix="/study", tags=["Study"])
@@ -122,6 +122,9 @@ async def get_waiting_phase(
 async def get_experiment_phase(
     study_id: uuid.UUID,
     conn: AsyncSession = Depends(get_db_session),
+    client: BaseClient = Depends(get_r2_client),
+    settings: Settings = Depends(get_settings)
 ):
-    """Returns the Experiment Phase configuration for the study."""
-    return await get_experiment_phase_from_db(study_id=study_id, conn=conn)
+    """ Returns the Experiment Phase configuration along with presigned URLs for experiment images. """
+    return await get_experiment_phase_data(study_id, conn, client, settings)
+
