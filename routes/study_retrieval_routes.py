@@ -17,7 +17,7 @@ from services.study_retrieval_service import (
     get_survey_id,
     get_survey_questions_from_db,
     get_learning_phase_data,
-    get_experiment_phase_from_db, get_experiment_phase_data,
+    get_experiment_phase_data,
 )
 
 router = APIRouter(prefix="/study", tags=["Study"])
