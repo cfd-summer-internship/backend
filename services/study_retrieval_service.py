@@ -295,13 +295,7 @@ async def get_experiment_phase_from_db(
     study = result.scalar_one_or_none()
     if not study or not study.experiment:
         raise HTTPException(status_code=404, detail="Experiment phase not found")
-    experiment = study.experiment
-    return ExperimentPhase(
-        display_duration=experiment.display_duration,
-        pause_duration=experiment.pause_duration,
-        display_method=experiment.display_method,
-        response_method=experiment.response_method,
-    )
+    return study.experiment
 
 
 async def get_experiment_phase_data(study_id: uuid.UUID, conn: AsyncSession, client: BaseClient, settings: Settings):
