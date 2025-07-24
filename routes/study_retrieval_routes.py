@@ -108,7 +108,7 @@ async def get_learning_phase(
     return await get_learning_phase_data(study_id=study_id, conn=conn, client=client, settings=settings)
 
 
-@router.get("/experiment_phase_images/{study_id}")
+@router.get("/experiment_phase/{study_id}")
 async def get_experiment_phase_images(
     study_id: uuid.UUID,
     conn: AsyncSession = Depends(get_db_session),
@@ -117,13 +117,3 @@ async def get_experiment_phase_images(
 ):
     """ Returns the Experiment Phase configuration along with presigned URLs for experiment images. """
     return await get_experiment_phase_data(study_id, conn, client, settings)
-
-
-
-@router.get("/experiment_phase/{study_id}")
-async def get_experiment_phase(
-    study_id: uuid.UUID,
-    conn: AsyncSession = Depends(get_db_session),
-):
-    """Returns the Experiment Phase configuration for the study."""
-    return await get_experiment_phase_from_db(study_id=study_id, conn=conn)
