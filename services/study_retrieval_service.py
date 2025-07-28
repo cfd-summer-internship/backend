@@ -307,5 +307,5 @@ async def get_experiment_phase_data(study_id: uuid.UUID, conn: AsyncSession, cli
         pause_duration=experiment.pause_duration,
         display_method=experiment.display_method,
         response_method=experiment.response_method,
-        image_urls=generated_urls
+        images=generated_urls
     )

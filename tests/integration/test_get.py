@@ -109,4 +109,4 @@ async def test_get_experiment_phase():
         assert "pause_duration" in json_data
         assert "display_method" in json_data
         assert "response_method" in json_data
-        assert "image_urls" in json_data
+        assert "images" in json_data
