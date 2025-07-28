@@ -1,6 +1,7 @@
 import sys
 import uuid
 import pytest
+import json
 from db.client import get_db_session
 
 # sys hacks to get imports to work
@@ -108,3 +109,4 @@ async def test_get_experiment_phase():
         assert "pause_duration" in json_data
         assert "display_method" in json_data
         assert "response_method" in json_data
+        assert "image_urls" in json_data
