@@ -3,8 +3,8 @@ from fastapi.params import Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from db.client import get_db_session
-from schemas.study_results_schema import StudyResponseList, StudyResponseSchema
-from services.study_results_service import add_study_result, check_for_study_results
+from schemas.study_results_schema import StudyResponseSchema
+from services.study_results_service import add_study_result
 from services.study_response_service import store_study_responses
 from schemas.study_config_response_schema import MessageResponse
 
