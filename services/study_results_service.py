@@ -8,6 +8,8 @@ from schemas.study_results_schema import StudyResult
 
 
 async def add_study_result(study_id: UUID, subject_id: UUID, conn: AsyncSession):
+    '''Creates a corresponding Study Result for each submission.
+    Only commited if Study Responses are successfully inserted.'''
     try:
         study_result = StudyResults(
             id=uuid4(),
@@ -16,7 +18,6 @@ async def add_study_result(study_id: UUID, subject_id: UUID, conn: AsyncSession)
             submitted=datetime.now(),
         )
         conn.add(study_result)
-        #await conn.commit()
         return study_result.id
     except Exception as e:
         print("Error", str(e))
@@ -44,10 +45,3 @@ async def get_study_results(study_id: UUID, conn: AsyncSession):
         return results
 
     return None
-
-
-async def check_for_study_results(study_id: UUID, subject_id:UUID, conn: AsyncSession):
-    stmt = select(StudyResults).where(StudyResults.study_id == study_id).where(StudyResults.subject_id==subject_id)
-    result = await conn.execute(stmt)
-    study_results = result.scalar_one_or_none()
-    return study_results

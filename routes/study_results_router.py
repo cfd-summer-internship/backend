@@ -17,9 +17,9 @@ async def submit_study_responses(
     subject_id:UUID = Query(...),
     conn: AsyncSession = Depends(get_db_session)
 ):
-    #CURRENTLY A SUBJECT CAN ONLY PERFORM THE EXPERIMENT ONCE
-    #CAN BE CHANGED BY REMOVED UNIQUE CONSTRAINT ON SUBJECT ID
+    #NOTE: Each subject can only have one submission per configuration.
     study_result_id = await add_study_result(study_id,subject_id,conn)
-    await store_study_responses(study_result_id, payload, conn)  
-    return MessageResponse(message="ok")
+    success = await store_study_responses(study_result_id, payload, conn)
+    if success:  
+        return MessageResponse(message="ok")
 
