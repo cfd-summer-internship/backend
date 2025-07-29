@@ -23,13 +23,14 @@ class SurveyAnswer(Base):
     survey_config_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("survey_config.id", ondelete="CASCADE", onupdate="CASCADE"),
-        unique=True
+        primary_key=True
     )
 
     survey_question_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("survey_question.id", ondelete="CASCADE", onupdate="CASCADE"),
-        unique=True
+        unique=True,
+        primary_key=True
     )
 
     text: Mapped[str] = mapped_column(

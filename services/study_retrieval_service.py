@@ -20,7 +20,7 @@ from schemas.study_config_response_schema import (
     LearningPhase,
     WaitPhase,
     ExperimentPhase,
-    ConclusionPhase, 
+    ConclusionPhase,
     SurveyQuestions
 )
 from services.r2_service import generate_url_list
@@ -39,6 +39,7 @@ async def get_study_id_list(conn: AsyncSession) -> list[uuid.UUID]:
     except Exception as e:
         raise HTTPException(404, detail=str(e))
 
+
 async def get_study_id(study_code: str, conn: AsyncSession) -> uuid.UUID:
     """Returns the first matching Study ID from a submitted 6-digit study code"""
     try:
@@ -50,6 +51,7 @@ async def get_study_id(study_code: str, conn: AsyncSession) -> uuid.UUID:
                 return study.id
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
+
 
 async def get_file_from_db(
     study_id: uuid.UUID,
@@ -103,8 +105,9 @@ async def get_file_from_db(
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
-async def get_image_list(study_id:uuid.UUID, conn:AsyncSession, column:ImageListColumn) -> list[str]:
-    image_list_column = getattr(UploadedFiles,column.value)
+
+async def get_image_list(study_id: uuid.UUID, conn: AsyncSession, column: ImageListColumn) -> list[str]:
+    image_list_column = getattr(UploadedFiles, column.value)
     try:
         stmt = (
             select(image_list_column)
@@ -117,9 +120,10 @@ async def get_image_list(study_id:uuid.UUID, conn:AsyncSession, column:ImageList
     except Exception as e:
         raise HTTPException(404, detail=str(e))
 
+
 async def get_config_file(
     study_id: uuid.UUID, conn: AsyncSession,
-    
+
 ) -> StudyConfigResponse:
     """
     Returns Configuration File
@@ -142,20 +146,21 @@ async def get_config_file(
         HTTPException: 500: Missing file upload data
         HTTPException: 500: Missing phase configuration
     """
-    
+
     stmt = (
         select(StudyConfiguration)
         .options(
             selectinload(StudyConfiguration.learning),
             selectinload(StudyConfiguration.wait),
             selectinload(StudyConfiguration.experiment),
+            # selectinload(StudyConfiguration.survey),
             selectinload(StudyConfiguration.files),
             selectinload(StudyConfiguration.conclusion),
             selectinload(StudyConfiguration.demographics)
             .selectinload(UserSurveyConfig.questions)
         )
 
-        .where(StudyConfiguration.id == study_id)     
+        .where(StudyConfiguration.id == study_id)
     )
 
     result = await conn.execute(stmt)
@@ -168,20 +173,19 @@ async def get_config_file(
         raise HTTPException(status_code=500, detail="Missing file upload data.")
     if not study.learning or not study.wait or not study.experiment:
         raise HTTPException(status_code=500, detail="Missing phase configuration.")
-  
+
 
     return StudyConfigResponse(
         files=FileUploads(
             consent_form=study.files.consent_form,
             study_instruction=study.files.study_instructions,
-            learning_image_list=study.files.learning_image_list,
-            experiment_image_list=study.files.experiment_image_list,
             study_debrief=study.files.study_debrief,
         ),
         learning=LearningPhase(
             display_duration=study.learning.display_duration,
             pause_duration=study.learning.pause_duration,
             display_method=study.learning.display_method,
+            images=study.files.learning_image_list
         ),
         wait=WaitPhase(
             display_duration=study.wait.display_duration,
@@ -190,6 +194,7 @@ async def get_config_file(
             display_duration=study.experiment.display_duration,
             pause_duration=study.experiment.pause_duration,
             display_method=study.experiment.display_method,
+            images=study.files.experiment_image_list,
             response_method=study.experiment.response_method,
             image_urls=[]
         ),
@@ -201,7 +206,7 @@ async def get_config_file(
     )
 
 async def get_survey_id(
-        study_id:uuid.UUID, conn:AsyncSession        
+        study_id:uuid.UUID, conn:AsyncSession
 ) -> uuid.UUID:
     """Returns matching Survey ID from corresponding Study ID"""
     try:
@@ -211,10 +216,10 @@ async def get_survey_id(
         )
         result = await conn.execute(stmt)
         return result.scalar_one_or_none()
-    
+
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
-    
+
 
 async def get_survey_questions_from_db(
         survey_id:uuid.UUID, conn:AsyncSession
@@ -230,11 +235,12 @@ async def get_survey_questions_from_db(
         return SurveyQuestions(questions=survey_questions)
 
     except Exception as e:
-        print(str(e))  
-    
+        print(str(e))
+
+
 
 async def get_learning_phase_from_db(
-    study_id: uuid.UUID, conn: AsyncSession
+        study_id: uuid.UUID, conn: AsyncSession
 ) -> LearningPhase:
     stmt = (
         select(StudyConfiguration)
@@ -247,16 +253,18 @@ async def get_learning_phase_from_db(
         raise HTTPException(status_code=404, detail="Learning phase not found")
     return study.learning
 
-async def get_learning_phase_data(study_id: uuid.UUID, conn: AsyncSession, client:BaseClient, settings:Settings):
-    learning = await get_learning_phase_from_db(study_id,conn)
-    image_list= await get_image_list(study_id,conn,ImageListColumn.LEARNING)
-    generated_urls = generate_url_list(client, settings.r2_bucket_name,image_list)
+
+async def get_learning_phase_data(study_id: uuid.UUID, conn: AsyncSession, client: BaseClient, settings: Settings):
+    learning = await get_learning_phase_from_db(study_id, conn)
+    image_list = await get_image_list(study_id, conn, ImageListColumn.LEARNING)
+    generated_urls = generate_url_list(client, settings.r2_bucket_name, image_list)
     return LearningPhase(
         display_duration=learning.display_duration,
         pause_duration=learning.pause_duration,
         display_method=learning.display_method,
-        image_urls=generated_urls
+        images=generated_urls
     )
+
 
 async def get_waiting_phase_from_db(
     study_id: uuid.UUID, conn: AsyncSession
@@ -275,6 +283,7 @@ async def get_waiting_phase_from_db(
         display_duration=wait.display_duration,
     )
 
+
 async def get_experiment_phase_from_db(
     study_id: uuid.UUID, conn: AsyncSession
 ) -> ExperimentPhase:
@@ -287,11 +296,17 @@ async def get_experiment_phase_from_db(
     study = result.scalar_one_or_none()
     if not study or not study.experiment:
         raise HTTPException(status_code=404, detail="Experiment phase not found")
-    experiment = study.experiment
+    return study.experiment
+
+
+async def get_experiment_phase_data(study_id: uuid.UUID, conn: AsyncSession, client: BaseClient, settings: Settings):
+    experiment = await get_experiment_phase_from_db(study_id, conn)
+    image_list = await get_image_list(study_id, conn, ImageListColumn.EXPERIMENT)
+    generated_urls = generate_url_list(client, settings.r2_bucket_name, image_list)
     return ExperimentPhase(
         display_duration=experiment.display_duration,
         pause_duration=experiment.pause_duration,
         display_method=experiment.display_method,
         response_method=experiment.response_method,
-        image_urls=[]
+        images=generated_urls
     )
