@@ -60,6 +60,7 @@ def downgrade() -> None:
     op.create_table('study_response',
     sa.Column('study_results_id', sa.UUID(), autoincrement=False, nullable=False),
     sa.Column('image_id', sa.VARCHAR(), autoincrement=False, nullable=False),
+    sa.Column('reponse_time', sa.DOUBLE_PRECISION(precision=53), autoincrement=False, nullable=False),
     sa.Column('answer', sa.INTEGER(), autoincrement=False, nullable=False),
     sa.ForeignKeyConstraint(['study_results_id'], ['study_results.id'], name=op.f('study_response_study_results_id_fkey'), onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('study_results_id', name=op.f('study_response_pkey')),

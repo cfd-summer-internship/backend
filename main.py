@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from routes.study_config_routes import router as ConfigRouter
 from routes.study_retrieval_routes import router as RetrievalRouter
 from routes.r2_routes import router as R2Router
-from routes.experiment_response_router import router as experiment_response_router
+from routes.study_results_router import router as StudyResultsRouter
 import uvicorn as uv
 import models.all_models # noqa
 
@@ -12,7 +12,7 @@ app = FastAPI()
 app.include_router(ConfigRouter)
 app.include_router(RetrievalRouter)
 app.include_router(R2Router)
-app.include_router(experiment_response_router)
+app.include_router(StudyResultsRouter)
 
 @app.get("/")
 def hello_world():
