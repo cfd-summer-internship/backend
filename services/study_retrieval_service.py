@@ -196,6 +196,7 @@ async def get_config_file(
             display_method=study.experiment.display_method,
             images=study.files.experiment_image_list,
             response_method=study.experiment.response_method,
+            image_urls=[]
         ),
         conclusion=ConclusionPhase(
             show_results=study.conclusion.show_results,
