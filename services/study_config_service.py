@@ -4,6 +4,7 @@ from fastapi import HTTPException, UploadFile
 
 from models.conclusion_config_model import ConclusionConfiguration
 from models.study_config_model import StudyConfiguration
+from models.study_model import Study
 from models.user_survey_config_model import UserSurveyConfig
 from models.survey_questions_model import SurveyQuestion
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,23 +35,28 @@ async def add_study(config: StudyConfigRequest, conn: AsyncSession):
         HTTPException: 500: Exception Details
     """
     try:
-        new_study = StudyConfiguration()
-        conn.add(new_study)
-        await conn.flush()  # To get new_study.id
+        study_id = uuid.uuid4()
+        config_id = uuid.uuid4()
+        study = Study(id=study_id, configuration_id=config_id)
+        conn.add(study)
 
-        await save_file_uploads(new_study.id, config.files, conn)
-        await save_learning_phase(new_study.id, config.learning, conn)
-        await save_wait_phase(new_study.id, config.wait, conn)
-        await save_experiment_phase(new_study.id, config.experiment, conn)
-        await save_conclusion_phase(new_study.id, config.conclusion, conn)
+        study_config = StudyConfiguration(id=config_id)
+        conn.add(study_config)
+        #await conn.flush()  # To get study_config.id
+
+        await save_file_uploads(study_config.id, config.files, conn)
+        await save_learning_phase(study_config.id, config.learning, conn)
+        await save_wait_phase(study_config.id, config.wait, conn)
+        await save_experiment_phase(study_config.id, config.experiment, conn)
+        await save_conclusion_phase(study_config.id, config.conclusion, conn)
        
         if config.conclusion.has_survey:
             survey_id = uuid.uuid4() #generate UUID
-            await save_user_survey(survey_id,new_study.id, conn)
+            await save_user_survey(survey_id,study_config.id, conn)
             await save_survey_questions(survey_id, config.conclusion.questions, conn)
        
         await conn.commit()
-        study_code = str(new_study.id)[-6:]
+        study_code = str(study_config.id)[-6:] #TODO: Change to Study ID and update all calls for a study ID
         return study_code
 
     except Exception as e:

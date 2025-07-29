@@ -18,7 +18,6 @@ class StudyResults(Base):
     study_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("study.id", ondelete="CASCADE", onupdate="CASCADE"),
-        unique=True,
     )
 
     subject_id: Mapped[uuid.UUID] = mapped_column(

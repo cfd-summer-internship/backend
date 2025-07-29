@@ -1,4 +1,6 @@
 import sys
+
+import pytest
 # sys hacks to get imports to work
 sys.path.append("./")
 from fastapi.testclient import TestClient
@@ -6,6 +8,7 @@ from main import app
 
 client = TestClient(app)
 
+@pytest.mark.asyncio
 def test_save_study_config():
     response = client.post(
         "/config/save",
@@ -31,4 +34,5 @@ def test_save_study_config():
         }
     )
     assert response.status_code == 200
-    assert response.json()["message"] == "Configuration added succesfully"
+    json_data = response.json()
+    assert "study_code" in json_data
