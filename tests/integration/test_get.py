@@ -77,7 +77,7 @@ async def test_get_learning_phase():
         assert "display_duration" in json_data
         assert "pause_duration" in json_data
         assert "display_method" in json_data
-        assert "image_urls" in json_data
+        assert "images" in json_data
 
 @pytest.mark.asyncio
 async def test_get_waiting_phase():
@@ -110,3 +110,19 @@ async def test_get_experiment_phase():
         assert "display_method" in json_data
         assert "response_method" in json_data
         assert "images" in json_data
+
+@pytest.mark.asyncio
+async def test_get_consent_form():
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        study_response = await client.get("/study/study_ids")
+        assert study_response.status_code == 200
+        study_id = study_response.json()
+
+        response = await client.get(f"/study/consent_form/{study_id[0]}")
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "application/pdf"
+        assert response.headers["content-disposition"].startswith("inline")
+
+        assert response.content[:4] == b"%PDF"  # PDF magic number
