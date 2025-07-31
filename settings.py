@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     r2_access_key_id: Optional[str] = None
     r2_secret_access_key: Optional[str] = None
     r2_bucket_name: Optional[str] = None
+    #AUTH
+    auth:Optional[str] = None
 
     # Load ENV File
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
