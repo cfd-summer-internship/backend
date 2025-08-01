@@ -1,10 +1,11 @@
 import uuid
 from fastapi_users import schemas
+from models.enums import UserRole
 
 
 class UserRead(schemas.BaseUser[uuid.UUID]):
     #Add properties as needed must match UserModel
-    pass
+    role:UserRole
 
 
 class UserCreate(schemas.BaseUserCreate):
@@ -14,4 +15,4 @@ class UserCreate(schemas.BaseUserCreate):
 
 class UserUpdate(schemas.BaseUserUpdate):
     #Add properties as needed must match UserModel
-    pass
+    role: UserRole | None = None
