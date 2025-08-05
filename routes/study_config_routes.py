@@ -4,7 +4,7 @@ from models.enums import UserRole
 from models.user_model import User
 from schemas.study_config_response_schema import StudyCodeReponse
 from services.study_config_service import add_study
-from auth.user_manager import current_active_user, require_role
+from auth.user_manager import require_role
 from services.form_parsers import (
     get_file_uploads,
     get_learning_phase,
