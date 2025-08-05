@@ -19,7 +19,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     verification_token_secret = SECRET
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
-        await self.user_db.update(user, {"role": UserRole.RESEARCHER})
+        await self.user_db.update(user, {"role": [UserRole.RESEARCHER]})
         print(f"User {user.id} has registered.")
 
     async def on_after_forgot_password(
@@ -33,13 +33,13 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         print(f"Verification requested for user {user.id}. Verification token: {token}")
 
     async def promote_to_admin(self,user:User, request: Optional[Request] = None):
-        return await self.user_db.update(user,{"role":UserRole.ADMIN})
+        return await self.user_db.update(user,{"role":[UserRole.ADMIN,UserRole.STAFF,UserRole.RESEARCHER]})
     
     async def promote_to_staff(self,user:User, request: Optional[Request] = None):
-        return await self.user_db.update(user,{"role":UserRole.STAFF})
+        return await self.user_db.update(user,{"role":[UserRole.STAFF,UserRole.RESEARCHER]})
     
     async def demote_user(self,user:User, request: Optional[Request] = None):
-        return await self.user_db.update(user,{"role":UserRole.RESEARCHER})
+        return await self.user_db.update(user,{"role":[UserRole.RESEARCHER]})
 
 # DI
 async def get_user_manager(user_db=Depends(get_user_db)):
@@ -55,7 +55,9 @@ current_superuser = fastapi_users.current_user(active=True, superuser=True)
 
 def require_role(*allowed_roles: UserRole):
     def checker(user: User = Depends(current_active_user)):
-        if user.role not in allowed_roles:
+        if UserRole.ADMIN in user.role:
+            return user
+        if not any(role in allowed_roles for role in user.role):
             raise HTTPException(403, "Forbidden")
         return user
 

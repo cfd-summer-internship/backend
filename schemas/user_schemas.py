@@ -5,7 +5,7 @@ from models.enums import UserRole
 
 class UserRead(schemas.BaseUser[uuid.UUID]):
     #Add properties as needed must match UserModel
-    role:UserRole
+    role:list[UserRole]
 
 
 class UserCreate(schemas.BaseUserCreate):
