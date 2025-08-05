@@ -1,3 +1,4 @@
+import uuid
 from fastapi import UploadFile
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
@@ -51,5 +52,6 @@ class StudyConfigRequest(BaseModel):
     wait: WaitPhaseRequest
     experiment: ExperimentPhaseRequest
     conclusion: ConclusionPhaseRequest
+    researcher:uuid.UUID
 
     model_config = ConfigDict(from_attributes=True)

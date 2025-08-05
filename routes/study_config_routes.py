@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends
 from db.client import get_db_session
+from models.user_model import User
 from schemas.study_config_response_schema import StudyCodeReponse
 from services.study_config_service import add_study
+from auth.user_manager import current_active_user
 from services.form_parsers import (
     get_file_uploads,
     get_learning_phase,
@@ -31,6 +33,7 @@ async def add_configuration(
     experiment: ExperimentPhaseRequest = Depends(get_experiment_phase),
     conclusion: ConclusionPhaseRequest = Depends(get_conclusion_phase),
     files: FileUploadsRequest = Depends(get_file_uploads),
+    user: User = Depends(current_active_user),
     conn: AsyncSession = Depends(get_db_session),
 ) -> dict:
     """
@@ -44,6 +47,7 @@ async def add_configuration(
         experiment=experiment,
         conclusion=conclusion,
         files=files,
+        researcher=user.id
     )
 
     study_code = await add_study(config=study, conn=conn)

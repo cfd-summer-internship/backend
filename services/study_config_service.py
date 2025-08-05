@@ -37,7 +37,7 @@ async def add_study(config: StudyConfigRequest, conn: AsyncSession):
     try:
         study_id = uuid.uuid4()
         config_id = uuid.uuid4()
-        study = Study(id=study_id, configuration_id=config_id)
+        study = Study(id=study_id, configuration_id=config_id, researcher=config.researcher)
         conn.add(study)
 
         study_config = StudyConfiguration(id=config_id)
