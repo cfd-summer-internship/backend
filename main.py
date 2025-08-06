@@ -3,6 +3,7 @@ from routes.study_config_routes import router as ConfigRouter
 from routes.study_retrieval_routes import router as RetrievalRouter
 from routes.r2_routes import router as R2Router
 from routes.study_results_router import router as StudyResultsRouter
+from routes.survey_answer_routes import router as SurveyAnswerRouter
 import uvicorn as uv
 import models.all_models # noqa
 
@@ -13,6 +14,7 @@ app.include_router(ConfigRouter)
 app.include_router(RetrievalRouter)
 app.include_router(R2Router)
 app.include_router(StudyResultsRouter)
+app.include_router(SurveyAnswerRouter)
 
 @app.get("/")
 def hello_world():
