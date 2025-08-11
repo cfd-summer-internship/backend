@@ -68,6 +68,23 @@ def upload_zip_file(
     bucket:str, 
     zip_file: UploadFile,
     prefix:str):
+    '''Upload a Zip File to r2
+
+    Args:
+        client: 
+            S3 Client, used for connection to r2 via the S3 API
+        bucket: 
+            Name of the R2 Bucket
+        zip_file: 
+            A fastAPI UploadFile with a .zip extension
+        prefix:
+            Indicate if you want to upload to a subfolder or specific directory
+    Returns:
+        200: details: Uploaded File Name, Bucket Name, and Prefix
+    Raises:
+        500: Upload Failed. Performs a rollback on failure, automatically deletes files that were uploaded to prevent partial uploading of folder.
+        """
+    '''
     #VALIDATE FILE TYPE
     if not zip_file.filename.lower().endswith(".zip"):
         raise HTTPException(status_code=400, detail="Must upload a .zip file")
@@ -91,12 +108,13 @@ def upload_zip_file(
 
             safe_key=pathlib.PurePosixPath(prefix,safe_parts[-1])
 
+            #OPEN FILE AND GET TYPE
             with zf.open(item) as extracted_file:
                 content_type, _ = mimetypes.guess_type(safe_parts[-1])
                 extra_args={}
                 if content_type:
                     extra_args["ContentType"] = content_type
-
+                    #UPLOAD FILE
                     client.upload_fileobj(
                         Fileobj=extracted_file,
                         Bucket=bucket,
