@@ -24,3 +24,11 @@ async def upload_file(
     client: BaseClient = Depends(get_r2_client),
 ):
     return upload_file_to_bucket(client, settings.r2_bucket_name, file.filename, file)
+
+@router.post("/upload_zip")
+async def upload_zip(
+    zip_file: UploadFile = File(...),
+    settings: Settings = Depends(get_settings),
+    client: BaseClient = Depends(get_r2_client)
+):
+    return upload_zip_file(client,settings.r2_bucket_name,zip_file)
