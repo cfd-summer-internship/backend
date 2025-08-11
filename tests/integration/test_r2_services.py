@@ -37,15 +37,14 @@ async def test_upload_zip():
     conn = get_db_session()
     session = await anext(conn)
     try:
-        test_zip="/tests/assets/test.zip"
-        with open(test_zip, "rb") as fp:
-            files = {"file":("test_images.zip",fp,"application/zip")}
+        with open("tests/assets/test.zip", "rb") as fp:
+            files = {"zip_file":("test.zip",fp,"application/zip")}
             response = app_client.post(
                 "/images/upload_zip",
                 params={
                     "prefix":"test/"
                 },
-                file=files
+                files=files
             )
     except Exception as e:
         print(str(e))

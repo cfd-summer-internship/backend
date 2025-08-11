@@ -77,36 +77,43 @@ def upload_zip_file(
         raise HTTPException(status_code=400, detail="Invalid ZIP archive")
     
     #VALIDATE FILE NAME
+    uploaded=[]
     zf = zipfile.ZipFile(zip_file.file)
-    for item in zf.infolist():
-        if item.is_dir():
-            continue
-        #SANITIZE FILENAME
-        raw_path = pathlib.PurePosixPath(item.filename)
-        safe_parts=[p for p in raw_path if p not in ("",".","..")]
-        if not safe_parts:
-            continue
+    try:
+        for item in zf.infolist():
+            if item.is_dir() or "DS_Store" in item.filename or "__MACOSX" in item.filename:
+                continue
+            #SANITIZE FILENAME
+            raw_path = pathlib.PurePosixPath(item.filename)
+            safe_parts=[p for p in raw_path.parts if p not in ("",".","..")]
+            if not safe_parts:
+                continue
 
-        safe_key=pathlib.PurePosixPath(prefix,safe_parts[-1])
+            safe_key=pathlib.PurePosixPath(prefix,safe_parts[-1])
 
-        with zf.open(item) as extracted_file:
-            content_type = mimetypes.guess_type(safe_parts[-1])
-            extra_args={}
-            if content_type:
-                extra_args["ContentType"] = content_type
+            with zf.open(item) as extracted_file:
+                content_type, _ = mimetypes.guess_type(safe_parts[-1])
+                extra_args={}
+                if content_type:
+                    extra_args["ContentType"] = content_type
 
-        try:
-            client.upload_fileobj(
-                Fileobj=extracted_file,
+                    client.upload_fileobj(
+                        Fileobj=extracted_file,
+                        Bucket=bucket,
+                        Key=str(safe_key),
+                        ExtraArgs=extra_args
+                    )
+                    uploaded.append(safe_key)
+    except Exception as e:
+        if uploaded:
+            client.delete_objects(
                 Bucket=bucket,
-                Key=str(safe_key),
-                ExtraArgs=extra_args
+                Delete={"Objects": [{"Key": k} for k in uploaded]},
             )
-        except Exception as e:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Failed uploading '{item.filename}': {e}"
-            )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed uploading, rolled back: '{item.filename}': {e}"
+        )
     return {
         "detail": (
             f"Uploaded files from {zip_file.filename} "
