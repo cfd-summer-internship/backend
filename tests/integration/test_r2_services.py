@@ -51,5 +51,43 @@ async def test_upload_zip():
     
     assert response.status_code == 200
     assert response.json()["detail"]
+
+@pytest.mark.asyncio
+async def test_delete_file():
+    try:
+        response = app_client.delete(
+            "/images/delete_file",
+            params={
+                "filename":"test/CFD-IF-623-129-N.jpg"
+            },
+        )
+    except Exception as e:
+        print(str(e))
     
+    assert response.status_code == 200
+    assert response.json()["status"]=="success"
+
+@pytest.mark.asyncio
+async def test_get_all_files():
+    try:
+        response = app_client.get(
+            "/images/get_all_file_info",
+        )
+    except Exception as e:
+        print(str(e))
+    
+    assert response.status_code == 200
+    assert response.json()["files"]
+
+@pytest.mark.asyncio
+async def test_get_file_page():
+    try:
+        response = app_client.get(
+            "/images/get_file_page",
+        )
+    except Exception as e:
+        print(str(e))
+    
+    assert response.status_code == 200
+    assert response.json()["files"]
         
