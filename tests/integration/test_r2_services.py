@@ -30,17 +30,21 @@ async def test_get_generated_urls() -> list[str]:
         await session.aclose()
         assert generated_urls
 
+@pytest.mark.asyncio
 async def test_upload_zip():
     settings = get_settings()
     client = get_r2_client()
     conn = get_db_session()
     session = await anext(conn)
     try:
-        test_zip="/assets/test.zip"
+        test_zip="/tests/assets/test.zip"
         with open(test_zip, "rb") as fp:
             files = {"file":("test_images.zip",fp,"application/zip")}
             response = app_client.post(
                 "/images/upload_zip",
+                params={
+                    "prefix":"test/"
+                },
                 file=files
             )
     except Exception as e:

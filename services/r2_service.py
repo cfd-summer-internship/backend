@@ -67,7 +67,7 @@ def upload_zip_file(
     client:BaseClient, 
     bucket:str, 
     zip_file: UploadFile,
-    prefix:str=""):
+    prefix:str):
     #VALIDATE FILE TYPE
     if not zip_file.filename.lower().endswith(".zip"):
         raise HTTPException(status_code=400, detail="Must upload a .zip file")
