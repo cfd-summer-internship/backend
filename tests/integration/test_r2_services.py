@@ -1,15 +1,19 @@
 import uuid
 import pytest
+from fastapi.testclient import TestClient
 from db.client import get_db_session
 from services.r2_client import get_r2_client
-from services.r2_service import generate_url_list
+from services.r2_service import generate_url_list, upload_zip_file
 from services.study_retrieval_service import get_image_list, get_study_id_list
 from settings import get_settings
 from models.enums import ImageListColumn
 from models import all_models
+from main import app
+
+app_client = TestClient(app)
 
 @pytest.mark.asyncio
-async def test_get_survey_id() -> uuid.UUID:
+async def test_get_generated_urls() -> list[str]:
     settings = get_settings()
     client = get_r2_client()
     conn = get_db_session()
@@ -25,3 +29,24 @@ async def test_get_survey_id() -> uuid.UUID:
     finally:
         await session.aclose()
         assert generated_urls
+
+async def test_upload_zip():
+    settings = get_settings()
+    client = get_r2_client()
+    conn = get_db_session()
+    session = await anext(conn)
+    try:
+        test_zip="/assets/test.zip"
+        with open(test_zip, "rb") as fp:
+            files = {"file":("test_images.zip",fp,"application/zip")}
+            response = app_client.post(
+                "/images/upload_zip",
+                file=files
+            )
+    except Exception as e:
+        print(str(e))
+    
+    assert response.status_code == 200
+    assert response.json()["detail"]
+    
+        
