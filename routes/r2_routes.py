@@ -1,7 +1,7 @@
 from botocore.client import BaseClient
 from fastapi import APIRouter, Depends, File, UploadFile
 from services.r2_client import get_r2_client
-from services.r2_service import generate_image_url, upload_file_to_bucket
+from services.r2_service import generate_image_url, upload_file_to_bucket, upload_zip_file
 from settings import Settings, get_settings
 
 # ROUTER
