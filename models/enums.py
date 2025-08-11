@@ -12,3 +12,8 @@ class ResponseMethodEnum(str,Enum):
 class ImageListColumn(str,Enum):
     LEARNING = "learning_image_list"
     EXPERIMENT = "experiment_image_list"
+
+class UserRole(str,Enum):
+    RESEARCHER = "researcher"
+    STAFF = "staff"
+    ADMIN = "admin"
