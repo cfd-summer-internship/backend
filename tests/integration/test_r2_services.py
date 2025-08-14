@@ -38,9 +38,9 @@ async def test_upload_zip():
     session = await anext(conn)
     try:
         with open("tests/assets/test.zip", "rb") as fp:
-            files = {"zip_file":("test.zip",fp,"application/zip")}
+            files = {"file":("test.zip",fp,"application/zip")}
             response = app_client.post(
-                "/images/upload_zip",
+                "/images/upload",
                 params={
                     "prefix":"test/"
                 },
@@ -55,9 +55,10 @@ async def test_upload_zip():
 @pytest.mark.asyncio
 async def test_delete_file():
     try:
-        response = app_client.delete(
+        response = app_client.request(
+            "DELETE",
             "/images/delete_file",
-            params={
+            json={
                 "filename":"test/CFD-IF-623-129-N.jpg"
             },
         )

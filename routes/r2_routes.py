@@ -1,8 +1,8 @@
 from typing import Optional
 from botocore.client import BaseClient
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.params import Query
-from schemas.r2_schemas import FileInfoList, PaginateResponse
+from schemas.r2_schemas import DeleteFileRequest, FileInfoList, PaginateResponse
 from services.r2_client import get_r2_client
 from services.r2_service import (
     delete_file_from_bucket,
@@ -27,32 +27,28 @@ async def get_image_url(
     return generate_image_url(client, settings.r2_bucket_name, filename)
 
 
-@router.post("/upload_file")
-async def upload_file(
+@router.post("/upload")
+async def upload_zip(
+    prefix: str = "",
     file: UploadFile = File(...),
     settings: Settings = Depends(get_settings),
     client: BaseClient = Depends(get_r2_client),
 ):
-    return upload_file_to_bucket(client, settings.r2_bucket_name, file.filename, file)
-
-
-@router.post("/upload_zip")
-async def upload_zip(
-    prefix: str = "",
-    zip_file: UploadFile = File(...),
-    settings: Settings = Depends(get_settings),
-    client: BaseClient = Depends(get_r2_client),
-):
-    return upload_zip_file(client, settings.r2_bucket_name, zip_file, prefix)
-
+    file_type = file.content_type
+    if file_type.startswith("image/"):
+        return upload_file_to_bucket(client, settings.r2_bucket_name, file.filename, file)
+    elif file_type in ("application/zip", "application/x-zip-compressed") or file.filename.lower().endswith(".zip"):
+        return upload_zip_file(client, settings.r2_bucket_name, file, prefix)
+    else:
+        raise HTTPException(415,f"Unsupported Med Type: {file_type}")
 
 @router.delete("/delete_file")
 async def delete_file(
-    filename: str,
+    payload: DeleteFileRequest,
     settings: Settings = Depends(get_settings),
     client: BaseClient = Depends(get_r2_client),
 ):
-    return delete_file_from_bucket(client, settings.r2_bucket_name, filename)
+    return delete_file_from_bucket(client, settings.r2_bucket_name, payload.filename)
 
 
 @router.get("/get_all_file_info", response_model=FileInfoList)

@@ -13,4 +13,7 @@ class FileInfoList(BaseModel):
 class PaginateResponse(BaseModel):
     files: list[FileInfo]
     next_token:Optional[str] = None
+
+class DeleteFileRequest(BaseModel):
+    filename: str
     
