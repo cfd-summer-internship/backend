@@ -35,7 +35,6 @@ class SurveyQuestionsRequest(BaseModel):
 class ConclusionPhaseRequest(BaseModel):
     show_results: bool
     has_survey: bool
-    questions: Optional[list[str]] = None   
 
 
 class FileUploadsRequest(BaseModel):

@@ -6,7 +6,6 @@ from models.conclusion_config_model import ConclusionConfiguration
 from models.study_config_model import StudyConfiguration
 from models.study_model import Study
 from models.user_survey_config_model import UserSurveyConfig
-from models.survey_questions_model import SurveyQuestion
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.experiment_config_model import ExperimentConfiguration
@@ -53,7 +52,6 @@ async def add_study(config: StudyConfigRequest, conn: AsyncSession):
         if config.conclusion.has_survey:
             survey_id = uuid.uuid4() #generate UUID
             await save_user_survey(survey_id,study_config.id, conn)
-            await save_survey_questions(survey_id, config.conclusion.questions, conn)
        
         await conn.commit()
         study_code = str(study_config.id)[-6:] #TODO: Change to Study ID and update all calls for a study ID
@@ -113,19 +111,6 @@ async def save_conclusion_phase(
             has_survey=data.has_survey,
         )
     )
-
-
-async def save_survey_questions(
-    survey_id: uuid.UUID, data: SurveyQuestionsRequest, conn: AsyncSession):
-    """Inserts Conclusion Survey Questions into database."""
-    for i,question_text in enumerate(data):
-        conn.add(
-            SurveyQuestion(
-                id=i+1,
-                survey_config_id=survey_id,
-                text=question_text
-            )
-        )
 
 
 async def save_user_survey(
