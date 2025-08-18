@@ -5,7 +5,6 @@ from fastapi.responses import StreamingResponse
 from db.client import get_db_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.uploaded_files_model import UploadedFiles
-from schemas.study_config_response_schema import SurveyQuestions
 from services.r2_client import get_r2_client
 from settings import Settings, get_settings
 from botocore.client import BaseClient
@@ -15,7 +14,6 @@ from services.study_retrieval_service import (
     get_study_id_list,
     get_study_id,
     get_file_from_db,
-    get_survey_id,
     get_learning_phase_data,
     get_experiment_phase_data, get_waiting_phase_from_db,
 )

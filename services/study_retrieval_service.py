@@ -20,7 +20,6 @@ from schemas.study_config_response_schema import (
     WaitPhase,
     ExperimentPhase,
     ConclusionPhase,
-    SurveyQuestions
 )
 from services.r2_service import generate_url_list
 

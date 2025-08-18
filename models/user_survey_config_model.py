@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from models.study_config_model import StudyConfiguration
-    from models.survey_answers_model import SurveyAnswer
 
 
 #LEARNING PHASE CONFIG

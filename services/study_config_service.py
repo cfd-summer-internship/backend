@@ -18,8 +18,7 @@ from schemas.study_config_request_schema import (
     FileUploadsRequest,
     WaitPhaseRequest,
     ExperimentPhaseRequest,
-    ConclusionPhaseRequest,
-    SurveyQuestionsRequest
+    ConclusionPhaseRequest
 )
 
 

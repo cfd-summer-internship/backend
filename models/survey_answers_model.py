@@ -1,12 +1,9 @@
 import uuid
-from sqlalchemy import Integer, String, ForeignKey
+from sqlalchemy import Integer, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 from .base_model import Base
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from models.user_survey_config_model import UserSurveyConfig
 
 
 class SurveyAnswer(Base):
