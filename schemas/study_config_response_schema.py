@@ -1,4 +1,6 @@
-from typing import Optional
+from typing import Optional, List
+from uuid import UUID
+
 from pydantic import BaseModel, ConfigDict
 from models.enums import DisplayMethodEnum, ResponseMethodEnum
 
@@ -53,4 +55,10 @@ class StudyConfigResponse(BaseModel):
     wait: WaitPhase
     experiment: ExperimentPhase
     conclusion: ConclusionPhase
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ResearcherConfigResponse(BaseModel):
+    researcher_id: UUID
+    config_ids: List[UUID]
     model_config = ConfigDict(from_attributes=True)
