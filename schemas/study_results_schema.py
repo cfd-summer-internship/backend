@@ -1,13 +1,14 @@
 from pydantic import BaseModel
 from uuid import UUID
 from typing import List
+from datetime import datetime
 
 #NOT SURE IF USED?
-# class StudyResult(BaseModel):
-#     id: UUID
-#     study_id: UUID
-#     subject_id: UUID
-#     submitted: datetime
+class StudyResult(BaseModel):
+    id: UUID
+    study_id: UUID
+    subject_id: UUID
+    submitted: datetime
 
 class ResponseIdentifiers(BaseModel):
     study_id: UUID

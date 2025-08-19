@@ -23,10 +23,10 @@ async def test_add_study_results(client):
                 "config_id":"cb4f7945-6d66-45b2-a120-791f20e8af41",
                 "subject_id":str(uuid.uuid4()),
             },
-            "responses":{
+            "responses":[
                 {"image_id":"CFD-WM-032-001-N.jpg","answer":0,"response_time":0.01},
                 {"image_id":"CFD-WM-033-025-N.jpg", "answer":2,"response_time":0.1}
-                }
+                ],
             }
         
         response = await client.post(f"/results/responses/", json=payload)

@@ -10,7 +10,7 @@ from schemas.study_config_response_schema import MessageResponse
 router = APIRouter(prefix="/results", tags=["Study Results"])
 
 
-@router.post("/responses/{study_id}")
+@router.post("/responses/")
 async def submit_study_responses(
     payload: StudyResultsPayload, 
     conn: AsyncSession = Depends(get_db_session)
