@@ -7,13 +7,14 @@ from datetime import datetime
 from schemas.study_results_schema import StudyResult
 
 
-async def add_study_result(study_id: UUID, subject_id: UUID, conn: AsyncSession):
+async def add_study_result(study_id: UUID, config_id: UUID, subject_id: UUID, conn: AsyncSession):
     '''Creates a corresponding Study Result for each submission.
     Only commited if Study Responses are successfully inserted.'''
     try:
         study_result = StudyResults(
             id=uuid4(),
             study_id=study_id,
+            config_id=config_id,
             subject_id=subject_id,
             submitted=datetime.now(),
         )
