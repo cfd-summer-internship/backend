@@ -27,7 +27,7 @@ async def client(app):
 
 @pytest_asyncio.fixture
 async def auth_token(client, settings):
-    login_info = {"username":"dev@plixelated.mozmail.com","password":settings.dev_credentials}
+    login_info = {"username":settings.dev_email,"password":settings.dev_password}
     response = await client.post("/auth/jwt/login", data=login_info)
     assert response.status_code == 200
     return response.json()["access_token"]
