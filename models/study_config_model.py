@@ -4,6 +4,8 @@ import uuid
 from models.base_model import Base
 from typing import TYPE_CHECKING
 
+from models.study_result_model import StudyResults
+
 
 if TYPE_CHECKING:
     from models.user_survey_config_model import UserSurveyConfig
@@ -67,3 +69,6 @@ class StudyConfiguration(Base):
         cascade="all, delete-orphan",
         uselist=False
     )
+
+    # REFERENCE TO STUDY RESULTS ONE-TO-MANY
+    results: Mapped[list["StudyResults"]] = relationship()

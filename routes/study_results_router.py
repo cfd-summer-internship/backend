@@ -1,25 +1,33 @@
 from fastapi import APIRouter, Depends
-from fastapi.params import Query
+# from fastapi.params import Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
 from db.client import get_db_session
-from schemas.study_results_schema import StudyResponseSchema
+from schemas.study_results_schema import StudyResultsPayload
 from services.study_results_service import add_study_result
 from services.study_response_service import store_study_responses
 from schemas.study_config_response_schema import MessageResponse
 
 router = APIRouter(prefix="/results", tags=["Study Results"])
 
+
 @router.post("/responses/{study_id}")
 async def submit_study_responses(
-    study_id: UUID,
-    payload: list[StudyResponseSchema],
-    subject_id:UUID = Query(...),
+    payload: StudyResultsPayload, 
     conn: AsyncSession = Depends(get_db_session)
-):
-    #NOTE: Each subject can only have one submission per configuration.
-    study_result_id = await add_study_result(study_id,subject_id,conn)
-    success = await store_study_responses(study_result_id, payload, conn)
-    if success:  
-        return MessageResponse(message="ok")
+) -> MessageResponse:
+    # NOTE: Each subject can only have one submission per configuration.
+    study_result_id = await add_study_result(
+        study_id=payload.identity.study_id,
+        config_id=payload.identity.config_id,
+        subject_id=payload.identity.subject_id,
+        conn=conn,
+    )
 
+    success = await store_study_responses(
+        study_results_id=study_result_id, 
+        responses=payload.responses, 
+        conn=conn
+    )
+
+    if success:
+        return MessageResponse(message="Results Submitted Successfully")

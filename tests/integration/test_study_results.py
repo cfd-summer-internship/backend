@@ -1,27 +1,34 @@
 import uuid
 from httpx import ASGITransport, AsyncClient
 import pytest
-from main import app
+import pytest_asyncio
+from main import app as fastapi_app
 
+@pytest.fixture
+def app():
+    return fastapi_app
 
-@pytest.mark.asyncio
-async def test_add_study_results():
+@pytest_asyncio.fixture
+async def client(app):
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as client:
-        study_id = "4ff98d1b-3fdb-43d9-8098-2d89a191e959"
-        subject_id = str(uuid.uuid4())
-        response = await client.post(f"/results/responses/{study_id}?subject_id={subject_id}",
-            json=[{
-                    "image_id":"CFD-WM-032-001-N.jpg",
-                    "answer":0,
-                    "response_time":0.01
-            },{
-                    "image_id":"CFD-WM-033-025-N.jpg",
-                    "answer":2,
-                    "response_time":0.1
+        yield client    
+
+@pytest.mark.asyncio
+async def test_add_study_results(client):
+        payload={
+            "identity":{
+                "study_id":"fb6e21c9-41ad-4042-9c92-fce17dfa279f",
+                "config_id":"cb4f7945-6d66-45b2-a120-791f20e8af41",
+                "subject_id":str(uuid.uuid4()),
             },
-            ]
-        )
+            "responses":{
+                {"image_id":"CFD-WM-032-001-N.jpg","answer":0,"response_time":0.01},
+                {"image_id":"CFD-WM-033-025-N.jpg", "answer":2,"response_time":0.1}
+                }
+            }
+        
+        response = await client.post(f"/results/responses/", json=payload)
         assert response.status_code == 200
-        assert response.json()["message"] == "ok"
+        assert response.json()["message"] == "Results Submitted Successfully"
