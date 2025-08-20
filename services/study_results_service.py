@@ -1,4 +1,6 @@
+from fastapi import HTTPException
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID, uuid4
 from models.study_result_model import StudyResults
@@ -25,7 +27,6 @@ async def add_study_result(config_id: UUID, subject_id: UUID, conn: AsyncSession
     except Exception as e:
         print("Error", str(e))
         await conn.rollback()
-        return None
 
 
 async def get_study_results(study_id: UUID, conn: AsyncSession):

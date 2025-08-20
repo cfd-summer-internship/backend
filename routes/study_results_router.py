@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 # from fastapi.params import Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.client import get_db_session
@@ -9,8 +9,7 @@ from schemas.study_config_response_schema import MessageResponse
 
 router = APIRouter(prefix="/results", tags=["Study Results"])
 
-
-@router.post("/responses/")
+@router.post("/responses", status_code=status.HTTP_201_CREATED)
 async def submit_study_responses(
     payload: StudyResultsPayload, 
     conn: AsyncSession = Depends(get_db_session)
@@ -22,12 +21,12 @@ async def submit_study_responses(
         subject_id=payload.identity.subject_id,
         conn=conn,
     )
-
-    success = await store_study_responses(
-        study_results_id=study_result_id, 
-        responses=payload.responses, 
-        conn=conn
-    )
+    if study_result_id:
+        success = await store_study_responses(
+            study_results_id=study_result_id, 
+            responses=payload.responses, 
+            conn=conn
+        )
 
     if success:
         return MessageResponse(message="Results Submitted Successfully")
