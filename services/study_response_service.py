@@ -1,8 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from uuid import UUID
 from models.study_response_model import StudyResponse
 from schemas.study_results_schema import StudyResponseSchema
 from fastapi import HTTPException
+
 
 
 async def store_study_responses(
@@ -22,6 +24,9 @@ async def store_study_responses(
             )
         await conn.commit()
         return True
+    except IntegrityError:
+        await conn.rollback()
+        raise HTTPException(status_code=409, detail="Subject cannot have duplicate submissions.")
     except Exception as e:
         await conn.rollback()
-        raise HTTPException(404, str(e))
+        raise HTTPException(status_code=500, detail=str(e))
