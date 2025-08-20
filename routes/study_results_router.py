@@ -17,7 +17,7 @@ async def submit_study_responses(
 ) -> MessageResponse:
     # NOTE: Each subject can only have one submission per configuration.
     study_result_id = await add_study_result(
-        study_id=payload.identity.study_id,
+        #study_id=payload.identity.study_id,
         config_id=payload.identity.config_id,
         subject_id=payload.identity.subject_id,
         conn=conn,
