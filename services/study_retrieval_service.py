@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from settings import Settings
 from botocore.client import BaseClient
 
+
 from models.study_config_model import StudyConfiguration
 from models.uploaded_files_model import UploadedFiles
 from models.user_survey_config_model import UserSurveyConfig
@@ -193,7 +194,6 @@ async def get_config_file(
             display_method=study.experiment.display_method,
             images=study.files.experiment_image_list,
             response_method=study.experiment.response_method,
-            image_urls=[]
         ),
         conclusion=ConclusionPhase(
             show_results=study.conclusion.show_results,
@@ -291,3 +291,16 @@ async def get_experiment_phase_data(study_id: uuid.UUID, conn: AsyncSession, cli
         image_ids=image_list,
         images=generated_urls
     )
+
+async def get_study_id_from_config(config_id:uuid.UUID, conn:AsyncSession) -> uuid.UUID:
+    try:
+        stmt=select(StudyConfiguration.study_id).where(StudyConfiguration.id==config_id)
+        results = await conn.execute(stmt)
+        study_id = results.scalars().one_or_none()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    if study_id is None:
+        raise HTTPException(status_code=404, deail="ID Not Found")
+    
+    return study_id

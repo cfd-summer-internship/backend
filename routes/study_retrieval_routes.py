@@ -11,6 +11,7 @@ from botocore.client import BaseClient
 from schemas.study_config_response_schema import StudyConfigResponse
 from services.study_retrieval_service import (
     get_config_file,
+    get_study_id_from_config,
     get_study_id_list,
     get_study_id,
     get_file_from_db,
@@ -30,6 +31,13 @@ async def get_all_study_ids(
     """Returns a list of all Study ID's from database"""
     return await get_study_id_list(conn=conn)
 
+@router.get("/study_id_from_config/{config_id}")
+async def get_study_id_config_id(
+    config_id:uuid.UUID,
+    conn: AsyncSession = Depends(get_db_session),
+) -> uuid.UUID:
+    """Returns a Study ID from a provided config ID"""
+    return await get_study_id_from_config(config_id, conn)
 
 @router.get("/study_id/{study_code}")
 async def get_study_id_from_code(

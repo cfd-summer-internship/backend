@@ -11,7 +11,7 @@ class StudyResult(BaseModel):
     submitted: datetime
 
 class ResponseIdentifiers(BaseModel):
-    study_id: UUID
+#    study_id: UUID
     config_id: UUID
     subject_id: UUID
 
