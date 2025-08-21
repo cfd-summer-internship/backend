@@ -1,5 +1,4 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI
 from routes.study_config_routes import router as ConfigRouter
 from routes.study_retrieval_routes import router as RetrievalRouter
 from routes.r2_routes import router as R2Router
