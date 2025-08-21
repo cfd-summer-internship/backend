@@ -1,6 +1,4 @@
-from fastapi import HTTPException
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID, uuid4
 from models.study_result_model import StudyResults
