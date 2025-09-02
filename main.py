@@ -41,10 +41,6 @@ app.include_router(SurveyAnswerRouter)
 async def echo(payload:dict):
     return {"received":payload}
 
-@app.post("/")
-async def echo(payload:dict):
-    return {"received":payload}
-
 @app.get("/")
 def hello_world():
     return {"message": "Hello World"}
