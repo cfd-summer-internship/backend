@@ -20,6 +20,13 @@ class StudyResults(Base):
         ForeignKey("study.id", ondelete="CASCADE", onupdate="CASCADE"),
     )
 
+    # CONFIG ID (FK, 1:MANY)
+    config_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("study_config.id", ondelete="CASCADE", onupdate="CASCADE"),
+        index=True
+    )
+
     subject_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), default=uuid.uuid4, unique=True
     )

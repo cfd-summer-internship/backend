@@ -7,14 +7,27 @@ from routes.survey_answer_routes import router as SurveyAnswerRouter
 from routes.auth_routes import auth_router as AuthRouter
 from routes.user_routes import router as UserRouter
 import uvicorn as uv
+from fastapi.middleware.cors import CORSMiddleware
 import models.all_models # noqa
 
 # Initialize FastAPI App
 app = FastAPI(
+    root_path="/api",
     swagger_ui_parameters={
         "docExpansion":"none"
     }
 )
+
+app.router.redirect_slashes = False 
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://frontend:3000", "http://plixel.tail8d155b.ts.net:3000"],
+    allow_credentials=True,
+    allow_methods=["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+    allow_headers=["Authorization","Content-Type"]
+)
+
 # Connect Router
 app.include_router(AuthRouter)
 app.include_router(UserRouter)
@@ -23,6 +36,10 @@ app.include_router(RetrievalRouter)
 app.include_router(R2Router)
 app.include_router(StudyResultsRouter)
 app.include_router(SurveyAnswerRouter)
+
+@app.post("/")
+async def echo(payload:dict):
+    return {"received":payload}
 
 @app.get("/")
 def hello_world():

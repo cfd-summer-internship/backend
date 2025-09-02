@@ -1,8 +1,11 @@
+from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import uuid
 from models.base_model import Base
 from typing import TYPE_CHECKING
+
+from models.study_result_model import StudyResults
 
 
 if TYPE_CHECKING:
@@ -12,7 +15,6 @@ if TYPE_CHECKING:
     from models.experiment_config_model import ExperimentConfiguration
     from models.uploaded_files_model import UploadedFiles
     from models.conclusion_config_model import ConclusionConfiguration
-    from models.study_model import Study
 
 
 class StudyConfiguration(Base):
@@ -23,6 +25,12 @@ class StudyConfiguration(Base):
         primary_key=True,
         default=uuid.uuid4,
         unique=True
+    )
+
+    # STUDY ID (FK, 1:MANY)
+    study_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("study.id", ondelete="CASCADE", onupdate="CASCADE"),
     )
 
     learning: Mapped["LearningConfiguration"] = relationship(
@@ -61,9 +69,12 @@ class StudyConfiguration(Base):
         uselist=False
     )
 
-    #STUDY PARENT -> STORES INFORMATION REGARDING THE STUDY
-    study: Mapped["Study"] = relationship(
-        back_populates="config",
-        cascade="all, delete-orphan",
-        uselist=False
-    )
+    # #STUDY PARENT -> STORES INFORMATION REGARDING THE STUDY
+    # study: Mapped["Study"] = relationship(
+    #     back_populates="config",
+    #     cascade="all, delete-orphan",
+    #     uselist=False
+    # )
+
+    # REFERENCE TO STUDY RESULTS ONE-TO-MANY
+    results: Mapped[list["StudyResults"]] = relationship()

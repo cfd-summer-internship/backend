@@ -5,15 +5,18 @@ from models.study_result_model import StudyResults
 from datetime import datetime
 
 from schemas.study_results_schema import StudyResult
+from services.study_retrieval_service import get_study_id_from_config
 
 
-async def add_study_result(study_id: UUID, subject_id: UUID, conn: AsyncSession):
+async def add_study_result(config_id: UUID, subject_id: UUID, conn: AsyncSession):
     '''Creates a corresponding Study Result for each submission.
     Only commited if Study Responses are successfully inserted.'''
     try:
+        study_id = await get_study_id_from_config(config_id=config_id, conn=conn)
         study_result = StudyResults(
             id=uuid4(),
             study_id=study_id,
+            config_id=config_id,
             subject_id=subject_id,
             submitted=datetime.now(),
         )
@@ -22,7 +25,6 @@ async def add_study_result(study_id: UUID, subject_id: UUID, conn: AsyncSession)
     except Exception as e:
         print("Error", str(e))
         await conn.rollback()
-        return None
 
 
 async def get_study_results(study_id: UUID, conn: AsyncSession):
