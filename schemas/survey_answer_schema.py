@@ -3,7 +3,7 @@ from uuid import UUID
 
 class SurveyAnswerResponse(BaseModel):
     study_id: UUID
-    age: str
+    age: int
     sex: str
     race: str
 
