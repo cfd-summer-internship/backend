@@ -241,6 +241,7 @@ async def get_learning_phase_data(study_id: uuid.UUID, conn: AsyncSession, clien
         display_duration=learning.display_duration,
         pause_duration=learning.pause_duration,
         display_method=learning.display_method,
+        image_ids=image_list,
         images=generated_urls
     )
 
@@ -287,5 +288,6 @@ async def get_experiment_phase_data(study_id: uuid.UUID, conn: AsyncSession, cli
         pause_duration=experiment.pause_duration,
         display_method=experiment.display_method,
         response_method=experiment.response_method,
+        image_ids=image_list,
         images=generated_urls
     )
