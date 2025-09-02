@@ -2,7 +2,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-import io, csv
+import io
+import csv
 
 from db.client import get_db_session
 from models.user_model import User

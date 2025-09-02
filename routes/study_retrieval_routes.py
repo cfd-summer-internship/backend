@@ -133,7 +133,7 @@ async def get_experiment_phase(
 
 @router.get("/researchers/{researcher_id}/configs", response_model=ResearcherConfigResponse)
 async def list_researcher_configs(
-    researcher_id: UUID,
+    researcher_id: uuid.UUID,
     db: AsyncSession = Depends(get_db_session),
 ):
     config_ids = await get_config_ids_for_researcher(researcher_id, db)
