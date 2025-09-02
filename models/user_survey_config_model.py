@@ -7,8 +7,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from models.study_config_model import StudyConfiguration
-    from models.survey_questions_model import SurveyQuestion
-    from models.survey_answers_model import SurveyAnswer
 
 
 #LEARNING PHASE CONFIG
@@ -34,6 +32,3 @@ class UserSurveyConfig(Base):
 
     #REFERENCE TO STUDY CONFIG
     study : Mapped["StudyConfiguration"]=relationship(back_populates="demographics")
-
-    questions : Mapped[list["SurveyQuestion"]]=relationship(back_populates="survey")
-    answers : Mapped[list["SurveyAnswer"]]=relationship(back_populates="survey")

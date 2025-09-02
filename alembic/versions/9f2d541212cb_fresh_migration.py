@@ -1,19 +1,19 @@
 """Fresh Migration
 
-Revision ID: 15d76b366a4c
+Revision ID: 9f2d541212cb
 Revises: 
-Create Date: 2025-07-03 11:45:35.441864
+Create Date: 2025-08-18 15:09:27.527391
 
 """
 from typing import Sequence, Union
 
+import fastapi_users_db_sqlalchemy
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.dialects.postgresql import ARRAY, TEXT
 
 # revision identifiers, used by Alembic.
-revision: str = '15d76b366a4c'
+revision: str = '9f2d541212cb'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -27,10 +27,29 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id')
     )
+    op.create_table('survey_answer',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('study_id', sa.UUID(), nullable=False),
+    sa.Column('age', sa.String(), nullable=False),
+    sa.Column('sex', sa.String(), nullable=False),
+    sa.Column('race', sa.String(), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('user',
+    sa.Column('role', sa.ARRAY(sa.Enum('RESEARCHER', 'STAFF', 'ADMIN', name='role', native_enum=False)), nullable=False),
+    sa.Column('id', fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
+    sa.Column('email', sa.String(length=320), nullable=False),
+    sa.Column('hashed_password', sa.String(length=1024), nullable=False),
+    sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('is_superuser', sa.Boolean(), nullable=False),
+    sa.Column('is_verified', sa.Boolean(), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_user_email'), 'user', ['email'], unique=True)
     op.create_table('conclusion_config',
     sa.Column('study_config_id', sa.UUID(), nullable=False),
     sa.Column('show_results', sa.Boolean(), nullable=False),
-    sa.Column('survey', sa.Boolean(), nullable=False),
+    sa.Column('has_survey', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['study_config_id'], ['study_config.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('study_config_id'),
     sa.UniqueConstraint('study_config_id')
@@ -49,12 +68,12 @@ def upgrade() -> None:
     sa.Column('study_config_id', sa.UUID(), nullable=False),
     sa.Column('consent_form', sa.String(), nullable=False),
     sa.Column('consent_form_bytes', postgresql.BYTEA(), nullable=False),
-    sa.Column('learning_image_list', ARRAY(TEXT), nullable=False),
-    sa.Column('experiment_image_list', ARRAY(TEXT), nullable=False),
+    sa.Column('learning_image_list', sa.ARRAY(sa.String()), nullable=False),
+    sa.Column('experiment_image_list', sa.ARRAY(sa.String()), nullable=False),
     sa.Column('study_instructions', sa.String(), nullable=False),
     sa.Column('study_instructions_bytes', postgresql.BYTEA(), nullable=False),
-    sa.Column('study_debrief', sa.String(), nullable=False),
-    sa.Column('study_debrief_bytes', postgresql.BYTEA(), nullable=False),
+    sa.Column('study_debrief', sa.String(), nullable=True),
+    sa.Column('study_debrief_bytes', postgresql.BYTEA(), nullable=True),
     sa.ForeignKeyConstraint(['study_config_id'], ['study_config.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('study_config_id'),
     sa.UniqueConstraint('study_config_id')
@@ -67,6 +86,15 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['study_config_id'], ['study_config.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('study_config_id'),
     sa.UniqueConstraint('study_config_id')
+    )
+    op.create_table('study',
+    sa.Column('id', sa.UUID(), nullable=False),
+    sa.Column('configuration_id', sa.UUID(), nullable=False),
+    sa.Column('researcher', sa.UUID(), nullable=False),
+    sa.ForeignKeyConstraint(['configuration_id'], ['study_config.id'], onupdate='CASCADE', ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('configuration_id'),
+    sa.UniqueConstraint('id')
     )
     op.create_table('survey_config',
     sa.Column('id', sa.UUID(), nullable=False),
@@ -83,21 +111,24 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('study_config_id'),
     sa.UniqueConstraint('study_config_id')
     )
-    op.create_table('survey_answer',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('survey_config_id', sa.UUID(), nullable=False),
-    sa.Column('text', sa.String(), nullable=False),
-    sa.ForeignKeyConstraint(['survey_config_id'], ['survey_config.id'], onupdate='CASCADE', ondelete='CASCADE'),
+    op.create_table('study_results',
+    sa.Column('id', sa.UUID(), nullable=False),
+    sa.Column('study_id', sa.UUID(), nullable=False),
+    sa.Column('subject_id', sa.UUID(), nullable=False),
+    sa.Column('submitted', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['study_id'], ['study.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('survey_config_id')
+    sa.UniqueConstraint('id'),
+    sa.UniqueConstraint('subject_id')
     )
-    op.create_table('survey_question',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('survey_config_id', sa.UUID(), nullable=False),
-    sa.Column('text', sa.String(), nullable=False),
-    sa.ForeignKeyConstraint(['survey_config_id'], ['survey_config.id'], onupdate='CASCADE', ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('survey_config_id')
+    op.create_table('study_response',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('study_results_id', sa.UUID(), nullable=False),
+    sa.Column('image_id', sa.String(), nullable=False),
+    sa.Column('response_time', sa.Float(), nullable=False),
+    sa.Column('answer', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['study_results_id'], ['study_results.id'], onupdate='CASCADE', ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', 'study_results_id')
     )
     # ### end Alembic commands ###
 
@@ -105,13 +136,17 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
-    op.drop_table('survey_question')
-    op.drop_table('survey_answer')
+    op.drop_table('study_response')
+    op.drop_table('study_results')
     op.drop_table('wait_config')
     op.drop_table('survey_config')
+    op.drop_table('study')
     op.drop_table('learn_config')
     op.drop_table('files_config')
     op.drop_table('experiment_config')
     op.drop_table('conclusion_config')
+    op.drop_index(op.f('ix_user_email'), table_name='user')
+    op.drop_table('user')
+    op.drop_table('survey_answer')
     op.drop_table('study_config')
     # ### end Alembic commands ###
