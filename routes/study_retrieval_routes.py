@@ -17,6 +17,8 @@ from services.study_retrieval_service import (
     get_learning_phase_data,
     get_experiment_phase_data, get_waiting_phase_from_db,
 )
+from services.researcher_configs_service import get_config_ids_for_researcher
+from schemas.study_config_response_schema import ResearcherConfigResponse
 
 router = APIRouter(prefix="/study", tags=["Study"])
 
@@ -113,3 +115,11 @@ async def get_experiment_phase(
     """ Returns the Experiment Phase configuration along with presigned URLs for experiment images. """
     return await get_experiment_phase_data(study_id, conn, client, settings)
 
+
+@router.get("/researchers/{researcher_id}/configs", response_model=ResearcherConfigResponse)
+async def list_researcher_configs(
+    researcher_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db_session),
+):
+    config_ids = await get_config_ids_for_researcher(researcher_id, db)
+    return ResearcherConfigResponse(researcher_id=researcher_id, config_ids=config_ids)
