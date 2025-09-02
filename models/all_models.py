@@ -15,3 +15,5 @@ import models.uploaded_files_model
 #RESULTS
 import models.study_result_model
 import models.study_response_model
+#USERS
+import models.user_model

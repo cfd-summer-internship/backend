@@ -30,6 +30,10 @@ class Study(Base):
         unique=True,
     )
 
+    researcher: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True)
+    )
+
     # REFERENCE TO STUDY CONFIG ONE-TO-ONE
     config: Mapped[StudyConfiguration] = relationship(back_populates="study")
 

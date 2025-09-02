@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Integer, String, ForeignKey
+from sqlalchemy import ForeignKeyConstraint, Integer, PrimaryKeyConstraint, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base_model import Base
@@ -14,28 +14,38 @@ class SurveyAnswer(Base):
     __tablename__ = "survey_answer"
 
     id: Mapped[int] = mapped_column(
-        Integer,
-        primary_key=True,
-        autoincrement=True,
-        nullable=False
+        Integer
     )
 
     survey_config_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("survey_config.id", ondelete="CASCADE", onupdate="CASCADE"),
-        primary_key=True
     )
 
     survey_question_id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey("survey_question.id", ondelete="CASCADE", onupdate="CASCADE"),
-        unique=True,
-        primary_key=True
     )
 
     text: Mapped[str] = mapped_column(
         String,
         nullable=False
+    )
+
+    __table_args__=(
+        PrimaryKeyConstraint("survey_config_id","survey_question_id","id"),
+        ForeignKeyConstraint(
+            ["survey_config_id"],
+            ["survey_config.id"],
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+            name="survey_answer_survey_config_id_fkey"
+        ),
+        ForeignKeyConstraint(
+            ["survey_config_id", "survey_question_id"],
+            ["survey_question.survey_config_id", "survey_question.id"],
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+            name="survey_answer_survey_question_id_fkey"
+        ),
     )
 
     #REFERENCE TO SURVEY CONFIG (1:MANY)
