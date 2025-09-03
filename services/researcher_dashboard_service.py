@@ -287,7 +287,7 @@ async def _validate_ownership(
 
 async def get_study_response_by_id(
     study_results_id: UUID, researcher_id: UUID, conn: AsyncSession
-) -> StudyResponseSchema:
+) -> ResultsExportSchema:
     study_result = await _validate_ownership(study_results_id, researcher_id, conn)
     if study_result:
         stmt = select(StudyResponse).where(
@@ -297,7 +297,7 @@ async def get_study_response_by_id(
         rows = res.scalars()
         if not rows:
             raise HTTPException(500, detail="Responses not Found")
-        study_responses:list[StudyResponseSchema] = []
+        study_responses: list[StudyResponseSchema] = []
         for response in rows:
             study_responses.append(
                 StudyResponseSchema(
@@ -306,5 +306,23 @@ async def get_study_response_by_id(
                     response_time=response.response_time,
                 )
             )
-        export_data = ResultsExportSchema(results=study_result, responses=study_responses)
-        return export_data
+        return ResultsExportSchema(results=study_result, responses=study_responses)
+
+
+async def get_all_study_responses(
+    researcher_id: UUID, conn: AsyncSession
+) -> list[ResultsExportSchema]:
+    # Fetch List of Study Results
+    stmt = (
+        select(StudyResults)
+        .join(Study)
+        .where(
+            Study.researcher == researcher_id,
+        )
+    )
+    res = await conn.execute(stmt)
+    rows = res.scalars()
+    export_data = []
+    for row in rows:
+        export_data.append(await get_study_response_by_id(row.id, researcher_id, conn))
+    return export_data

@@ -105,3 +105,22 @@ async def test_get_study_responses(client, auth_token):
         assert "image_id" in study_response
         assert "answer" in study_response
         assert "response_time" in study_response
+
+@pytest.mark.asyncio
+async def test_export_all(client, auth_token):
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    response = await client.get(
+        f'/researcher/export_all',
+        headers=headers
+    )
+    assert response.status_code == 200
+    export_data = response.json()
+    for export in export_data:
+        assert "id" in export["results"]
+        assert "study_id" in export["results"]
+        assert "subject_id" in export["results"]
+        assert "submitted" in export["results"]
+        for study_response in export["responses"]:
+            assert "image_id" in study_response
+            assert "answer" in study_response
+            assert "response_time" in study_response

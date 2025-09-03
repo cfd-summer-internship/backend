@@ -10,6 +10,7 @@ from models.user_model import User
 from models.enums import UserRole
 from auth.user_manager import require_role
 from services.researcher_dashboard_service import (
+    get_all_study_responses,
     get_study_response_by_id,
     list_studies_for_researcher,
     summarize_study,
@@ -145,3 +146,10 @@ async def export_study_results_by_id(
     conn: AsyncSession = Depends(get_db_session),
 ) -> ResultsExportSchema:
     return await get_study_response_by_id(study_results_id, user.id, conn)
+
+@router.get("/export_all", response_model=list[ResultsExportSchema])
+async def export_all(
+    user: User = Depends(require_role(UserRole.RESEARCHER)),
+    conn: AsyncSession = Depends(get_db_session),
+) -> list[ResultsExportSchema]:
+    return await get_all_study_responses(user.id, conn)
