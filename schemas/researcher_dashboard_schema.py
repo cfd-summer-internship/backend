@@ -33,3 +33,18 @@ class PagedResults(BaseModel):
     page: int
     page_size: int
     total: int
+
+class StudyResultsSchema(BaseModel):
+    id: UUID
+    study_id: UUID
+    subject_id: UUID
+    submitted: datetime
+
+class StudyResponseSchema(BaseModel):
+    image_id: str
+    answer: int
+    response_time: float
+
+class ResultsExportSchema(BaseModel):
+    results: StudyResultsSchema
+    responses: list[StudyResponseSchema]
