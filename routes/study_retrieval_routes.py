@@ -18,7 +18,7 @@ from services.study_retrieval_service import (
     get_learning_phase_data,
     get_experiment_phase_data, get_waiting_phase_from_db,
 )
-from services.researcher_configs_service import get_config_ids_for_researcher
+from services.researcher_config_services import get_config_ids_for_researcher
 from schemas.study_config_response_schema import ResearcherConfigResponse
 
 router = APIRouter(prefix="/study", tags=["Study"])
