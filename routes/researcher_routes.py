@@ -19,7 +19,7 @@ from services.researcher_dashboard_service import (
     get_study_codes,
     get_study_results_subject_id,
     get_study_results_study_id,
-    get_all_study_results
+    get_all_study_results,
 )
 from schemas.researcher_dashboard_schema import (
     ResultsExportSchema,
@@ -116,6 +116,7 @@ async def get_config_list(
     study_codes = await get_study_codes(conn, user.id)
     return {"study_codes": study_codes}
 
+
 @router.get("/results/{study_id}", response_model=list[StudyResultsSchema])
 async def get_study_results_by_id(
     study_id: UUID,
@@ -123,6 +124,7 @@ async def get_study_results_by_id(
     conn: AsyncSession = Depends(get_db_session),
 ) -> list[StudyResultsSchema]:
     return await get_study_results_study_id(study_id, user.id, conn)
+
 
 @router.get("/result/{subject_id}", response_model=StudyResultsSchema)
 async def get_study_results_by_subject(
@@ -132,6 +134,7 @@ async def get_study_results_by_subject(
 ) -> StudyResultsSchema:
     return await get_study_results_subject_id(subject_id, user.id, conn)
 
+
 @router.get("/results", response_model=list[StudyResultsSchema])
 async def get_all(
     user: User = Depends(require_role(UserRole.RESEARCHER)),
@@ -139,17 +142,80 @@ async def get_all(
 ) -> list[StudyResultsSchema]:
     return await get_all_study_results(user.id, conn)
 
+
 @router.get("/export/{study_results_id}", response_model=ResultsExportSchema)
 async def export_study_results_by_id(
     study_results_id: UUID,
     user: User = Depends(require_role(UserRole.RESEARCHER)),
     conn: AsyncSession = Depends(get_db_session),
-) -> ResultsExportSchema:
-    return await get_study_response_by_id(study_results_id, user.id, conn)
+):
+    export_data = await get_study_response_by_id(study_results_id, user.id, conn)
+    buffer = io.StringIO()
+    doc = csv.writer(buffer)
+    doc.writerow(
+        [
+            "Study ID",
+            "Subject ID",
+            "Submission",
+            "CFD Image ID",
+            "Answer",
+            "Response time (ms)",
+        ]
+    )
+    for response in export_data.responses:
+        doc.writerow(
+            [
+                export_data.results.study_id,
+                export_data.results.subject_id,
+                export_data.results.submitted,
+                response.image_id,
+                response.answer,
+                response.response_time,
+            ]
+        )
+    buffer.seek(0)
+    headers = {
+        "Content-Disposition": f"attachment; filename={str(export_data.results.study_id)[-6:]}-results.csv; filename*=UTF-8''{str(export_data.results.study_id)[-6:]}-results.csv"
+    }
+    return StreamingResponse(
+        iter([buffer.getvalue()]), media_type="text/csv", headers=headers
+    )
+
 
 @router.get("/export_all", response_model=list[ResultsExportSchema])
 async def export_all(
     user: User = Depends(require_role(UserRole.RESEARCHER)),
     conn: AsyncSession = Depends(get_db_session),
 ) -> list[ResultsExportSchema]:
-    return await get_all_study_responses(user.id, conn)
+    export_data = await get_all_study_responses(user.id, conn)
+    buffer = io.StringIO()
+    doc = csv.writer(buffer)
+    doc.writerow(
+        [
+            "Study ID",
+            "Subject ID",
+            "Submission",
+            "CFD Image ID",
+            "Answer",
+            "Response time (ms)",
+        ]
+    )
+    for data in export_data:
+        for response in data.responses:
+            doc.writerow(
+                [
+                    data.results.study_id,
+                    data.results.subject_id,
+                    data.results.submitted,
+                    response.image_id,
+                    response.answer,
+                    response.response_time,
+                ]
+            )
+    buffer.seek(0)
+    headers = {
+        "Content-Disposition": f"attachment; filename={str(user.id)}-results.csv; filename*=UTF-8''{str(user.id)}-results.csv"
+    }
+    return StreamingResponse(
+        iter([buffer.getvalue()]), media_type="text/csv", headers=headers
+    )
