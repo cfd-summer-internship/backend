@@ -37,6 +37,7 @@ class PagedResults(BaseModel):
 class StudyResultsSchema(BaseModel):
     id: UUID
     study_id: UUID
+    config_id: UUID
     subject_id: UUID
     submitted: datetime
 

@@ -72,13 +72,14 @@ async def test_get_study_result_by_id(client, auth_token):
     for study_result in response.json():
         assert "id" in study_result
         assert "study_id" in study_result
+        assert "config_id" in study_result
         assert "subject_id" in study_result
         assert "submitted" in study_result
 
 @pytest.mark.asyncio
 async def test_get_study_result_subject(client, auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}
-    subject_id = "1b907c57-2a92-4948-af52-433410aa0bdb"
+    subject_id = "a2754263-dd60-40a2-a3d2-567f10c369e3"
     response = await client.get(
         f'/researcher/result/{subject_id}',
         headers=headers
@@ -87,6 +88,7 @@ async def test_get_study_result_subject(client, auth_token):
     study_result =  response.json()
     assert "id" in study_result
     assert "study_id" in study_result
+    assert "config_id" in study_result
     assert "subject_id" in study_result
     assert "submitted" in study_result
 
@@ -101,6 +103,7 @@ async def test_get_all_results(client, auth_token):
     for study_result in response.json():
         assert "id" in study_result
         assert "study_id" in study_result
+        assert "config_id" in study_result
         assert "subject_id" in study_result
         assert "submitted" in study_result
 
@@ -157,3 +160,19 @@ async def test_check_survey(session):
     res = await session.execute(stmt)
     survey = res.scalar_one_or_none()
     assert survey == True
+
+@pytest.mark.asyncio
+async def test_include_config_id(session):
+    researcher_id = "786ef119-c7d4-474f-a573-e0d8f6a24476"
+    stmt = (
+        select(StudyResults)
+        .join(Study)
+        .join(StudyConfiguration)
+        .where(
+            Study.researcher == researcher_id,
+        )
+    )
+    res = await session.execute(stmt)
+    rows = res.scalars()
+    for row in rows:
+        assert row.config_id
