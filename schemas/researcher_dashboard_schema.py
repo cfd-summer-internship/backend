@@ -45,6 +45,13 @@ class StudyResponseSchema(BaseModel):
     answer: int
     response_time: float
 
+class SurveyAnswerSchema(BaseModel):
+    subject_id: UUID
+    age: int
+    sex: str
+    race: str
+
 class ResultsExportSchema(BaseModel):
     results: StudyResultsSchema
     responses: list[StudyResponseSchema]
+    demographics: Optional[SurveyAnswerSchema] = None

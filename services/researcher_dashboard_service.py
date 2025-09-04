@@ -4,15 +4,18 @@ from fastapi import HTTPException
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from models.conclusion_config_model import ConclusionConfiguration
 from models.study_model import Study
 from models.study_result_model import StudyResults
 from models.study_response_model import StudyResponse
 from models.uploaded_files_model import UploadedFiles
 from models.study_config_model import StudyConfiguration
+from models.survey_answers_model import SurveyAnswer
 from schemas.researcher_dashboard_schema import (
     ResultsExportSchema,
     StudyResponseSchema,
     StudyResultsSchema,
+    SurveyAnswerSchema,
 )
 
 
@@ -284,11 +287,47 @@ async def _validate_ownership(
         submitted=row.submitted,
     )
 
+async def _check_for_survey(study_results_id: UUID, conn: AsyncSession):
+    stmt = (
+        select(ConclusionConfiguration.has_survey)
+        .join(StudyConfiguration)
+        .join(Study)
+        .join(StudyResults)
+        .where(StudyResults.id == study_results_id)
+    )
+    res = await conn.execute(stmt)
+    has_survey = res.scalar_one_or_none()
+    if not has_survey:
+        raise HTTPException(500, detail="Unable to Find Conclusion Configuration")
+    return has_survey
+
+async def _get_demographics(subject_id: UUID, conn: AsyncSession):
+    stmt = (
+        select(SurveyAnswer)
+        .where(SurveyAnswer.subject_id == subject_id)
+    )
+
+    res = await conn.execute(stmt)
+    demographics = res.scalar_one_or_none()
+    if demographics:
+        return SurveyAnswerSchema(
+            subject_id=demographics.subject_id,
+            age=demographics.age,
+            sex=demographics.sex,
+            race=demographics.race
+        )
+    return demographics
+
 
 async def get_study_response_by_id(
     study_results_id: UUID, researcher_id: UUID, conn: AsyncSession
 ) -> ResultsExportSchema:
     study_result = await _validate_ownership(study_results_id, researcher_id, conn)
+    has_survey = _check_for_survey(study_results_id, conn)
+    
+    if has_survey:
+       demographics = await _get_demographics(study_result.subject_id, conn)
+    
     if study_result:
         stmt = select(StudyResponse).where(
             StudyResponse.study_results_id == study_result.id
@@ -306,8 +345,9 @@ async def get_study_response_by_id(
                     response_time=response.response_time,
                 )
             )
+        if has_survey:
+            return ResultsExportSchema(results=study_result, responses=study_responses, demographics=demographics)
         return ResultsExportSchema(results=study_result, responses=study_responses)
-
 
 async def get_all_study_responses(
     researcher_id: UUID, conn: AsyncSession

@@ -160,19 +160,29 @@ async def export_study_results_by_id(
             "CFD Image ID",
             "Answer",
             "Response time (ms)",
+            "Age",
+            "Sex",
+            "Race",
         ]
     )
     for response in export_data.responses:
-        doc.writerow(
-            [
-                export_data.results.study_id,
-                export_data.results.subject_id,
-                export_data.results.submitted,
-                response.image_id,
-                response.answer,
-                response.response_time,
-            ]
-        )
+        row_data = [
+            export_data.results.study_id,
+            export_data.results.subject_id,
+            export_data.results.submitted,
+            response.image_id,
+            response.answer,
+            response.response_time,
+        ]
+        if export_data.demographics:
+            row_data.extend(
+                [
+                    export_data.demographics.age,
+                    export_data.demographics.sex,
+                    export_data.demographics.race,
+                ]
+            )
+        doc.writerow(row_data)
     buffer.seek(0)
     headers = {
         "Content-Disposition": f"attachment; filename={str(export_data.results.study_id)[-6:]}-results.csv; filename*=UTF-8''{str(export_data.results.study_id)[-6:]}-results.csv"
@@ -198,20 +208,30 @@ async def export_all(
             "CFD Image ID",
             "Answer",
             "Response time (ms)",
+            "Age",
+            "Sex",
+            "Race",
         ]
     )
     for data in export_data:
         for response in data.responses:
-            doc.writerow(
-                [
-                    data.results.study_id,
-                    data.results.subject_id,
-                    data.results.submitted,
-                    response.image_id,
-                    response.answer,
-                    response.response_time,
-                ]
-            )
+            row_data = [
+                data.results.study_id,
+                data.results.subject_id,
+                data.results.submitted,
+                response.image_id,
+                response.answer,
+                response.response_time,
+            ]
+            if data.demographics:
+                row_data.extend(
+                    [
+                        data.demographics.age,
+                        data.demographics.sex,
+                        data.demographics.race,
+                    ]
+                )
+            doc.writerow(row_data)
     buffer.seek(0)
     headers = {
         "Content-Disposition": f"attachment; filename={str(user.id)}-results.csv; filename*=UTF-8''{str(user.id)}-results.csv"

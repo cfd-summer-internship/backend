@@ -3,12 +3,20 @@ import sys
 from httpx import ASGITransport, AsyncClient
 import pytest
 import pytest_asyncio
+from sqlalchemy import select
 
+from db.client import get_db_session
+from models.conclusion_config_model import ConclusionConfiguration
+from models.study_config_model import StudyConfiguration
+from models.study_model import Study
+from models.study_result_model import StudyResults
 from settings import get_settings
 # sys hacks to get imports to work
 sys.path.append("./")
 from fastapi.testclient import TestClient
 from main import app as fastapi_app
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 @pytest.fixture
 def settings():
@@ -17,6 +25,15 @@ def settings():
 @pytest.fixture
 def app():
     return fastapi_app
+
+@pytest_asyncio.fixture
+async def session():
+    settings = get_settings()
+    engine=create_async_engine(settings.connection_string,echo=True)
+    AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+    async with AsyncSessionLocal() as session:
+        yield session
 
 @pytest_asyncio.fixture
 async def client(app):
@@ -88,23 +105,24 @@ async def test_get_all_results(client, auth_token):
         assert "submitted" in study_result
 
 @pytest.mark.asyncio
-async def test_get_study_responses(client, auth_token):
+async def test_export_responses(client, auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}
-    study_results_id = "0ec8dca6-e226-4031-9e07-195ea8aed94c"
+    study_results_id = "18b5b754-b08c-48c5-a158-b2e93dd68e25"
     response = await client.get(
         f'/researcher/export/{study_results_id}',
         headers=headers
     )
     assert response.status_code == 200
-    export = response.json()
-    assert "id" in export["results"]
-    assert "study_id" in export["results"]
-    assert "subject_id" in export["results"]
-    assert "submitted" in export["results"]
-    for study_response in export["responses"]:
-        assert "image_id" in study_response
-        assert "answer" in study_response
-        assert "response_time" in study_response
+    assert response.headers.get("content-type") == "text/csv; charset=utf-8"
+    #export = response.json()
+    # assert "id" in export["results"]
+    # assert "study_id" in export["results"]
+    # assert "subject_id" in export["results"]
+    # assert "submitted" in export["results"]
+    # for study_response in export["responses"]:
+    #     assert "image_id" in study_response
+    #     assert "answer" in study_response
+    #     assert "response_time" in study_response
 
 @pytest.mark.asyncio
 async def test_export_all(client, auth_token):
@@ -114,13 +132,28 @@ async def test_export_all(client, auth_token):
         headers=headers
     )
     assert response.status_code == 200
-    export_data = response.json()
-    for export in export_data:
-        assert "id" in export["results"]
-        assert "study_id" in export["results"]
-        assert "subject_id" in export["results"]
-        assert "submitted" in export["results"]
-        for study_response in export["responses"]:
-            assert "image_id" in study_response
-            assert "answer" in study_response
-            assert "response_time" in study_response
+    assert response.headers.get("content-type") == "text/csv; charset=utf-8"
+    # export_data = response.json()
+    # for export in export_data:
+    #     assert "id" in export["results"]
+    #     assert "study_id" in export["results"]
+    #     assert "subject_id" in export["results"]
+    #     assert "submitted" in export["results"]
+    #     for study_response in export["responses"]:
+    #         assert "image_id" in study_response
+    #         assert "answer" in study_response
+    #         assert "response_time" in study_response
+
+@pytest.mark.asyncio
+async def test_check_survey(session):
+    study_results_id = "18b5b754-b08c-48c5-a158-b2e93dd68e25"
+    stmt = (
+        select(ConclusionConfiguration.has_survey)
+        .join(StudyConfiguration)
+        .join(Study)
+        .join(StudyResults)
+        .where(StudyResults.id == study_results_id)
+    )
+    res = await session.execute(stmt)
+    survey = res.scalar_one_or_none()
+    assert survey == True

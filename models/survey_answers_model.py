@@ -16,13 +16,8 @@ class SurveyAnswer(Base):
         nullable=False
     )
 
-    study_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    subject_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False, unique=True)
 
     age: Mapped[str] = mapped_column(Integer, nullable=False)
     sex: Mapped[str] = mapped_column(String, nullable=False)
     race: Mapped[str] = mapped_column(String, nullable=False)
-
-    #Removed REFERENCE TO SURVEY CONFIG (1:MANY)
-
-
-    #Removed relationship with Survey Questions since we dont fetch it from db anymore
