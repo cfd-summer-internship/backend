@@ -191,4 +191,13 @@ async def test_delete_config(session):
     res = await session.execute(stmt)
     row = res.scalar_one_or_none()
     assert row is None
+
+@pytest.mark.asyncio
+async def test_get_id(session):
+    studyCode = "6a3335"
+    stmt = select(StudyConfiguration.id)
+    res = await session.execute(stmt)
+    configs = res.scalars()
+    config_id = [str(config) for config in configs if str(config)[-6:] == studyCode]
+    assert config_id[0] == "8d68f623-84f4-44a5-822d-b0067d6a3335"
     

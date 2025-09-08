@@ -12,6 +12,7 @@ from auth.user_manager import require_role
 from services.researcher_dashboard_service import (
     delete_study_config,
     get_all_study_responses,
+    get_config_id,
     get_study_response_by_id,
     get_study_codes,
     get_study_results_subject_id,
@@ -19,6 +20,7 @@ from services.researcher_dashboard_service import (
     get_all_study_results,
 )
 from schemas.researcher_dashboard_schema import (
+    ConfigDeleteRequest,
     ResultsExportSchema,
     StudyResultsSchema,
 )
@@ -60,12 +62,13 @@ async def get_all(
 ) -> list[StudyResultsSchema]:
     return await get_all_study_results(user.id, conn)
 
-@router.delete("/delete/{config_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/delete", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_config(
-    config_id:UUID,
+    payload: ConfigDeleteRequest,
     user: User = Depends(require_role(UserRole.RESEARCHER)),
     conn: AsyncSession = Depends(get_db_session)
 ):
+    config_id = await get_config_id(user.id, payload.study_code, conn)
     return await delete_study_config(config_id, user.id, conn)
 
 @router.get("/export/{study_results_id}", response_model=ResultsExportSchema)

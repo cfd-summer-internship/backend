@@ -16,6 +16,13 @@ from schemas.researcher_dashboard_schema import (
     SurveyAnswerSchema,
 )
 
+async def get_config_id(researcher:UUID, studyCode:str, conn:AsyncSession) -> UUID:
+    stmt = select(StudyConfiguration.id).join(Study).where(Study.researcher == researcher)
+    res = await conn.execute(stmt)
+    configs = res.scalars()
+    config_id = [str(config) for config in configs if str(config)[-6:] == studyCode]
+    return config_id[0]
+
 
 async def get_study_codes(conn: AsyncSession, researcher_id: UUID) -> list[str]:
     stmt = (
