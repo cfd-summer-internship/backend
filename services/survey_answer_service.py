@@ -9,7 +9,7 @@ from schemas.survey_answer_schema import SurveyAnswerResponse
 async def save_survey_answer(answer: SurveyAnswerResponse, conn: AsyncSession):
     try:
         db_answer = SurveyAnswer(
-            study_id=answer.study_id,
+            subject_id=answer.subject_id,
             age=answer.age,
             sex=answer.sex,
             race=answer.race

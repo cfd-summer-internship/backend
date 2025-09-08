@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, StringConstraints
 from uuid import UUID
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Annotated, Optional, List, Dict
 
 class StudyListItem(BaseModel):
     id: UUID
@@ -33,3 +33,32 @@ class PagedResults(BaseModel):
     page: int
     page_size: int
     total: int
+
+class StudyResultsSchema(BaseModel):
+    id: UUID
+    study_id: UUID
+    config_id: UUID
+    subject_id: UUID
+    submitted: datetime
+
+class StudyResponseSchema(BaseModel):
+    image_id: str
+    answer: int
+    response_time: float
+
+class SurveyAnswerSchema(BaseModel):
+    subject_id: UUID
+    age: int
+    sex: str
+    race: str
+
+class ResultsExportSchema(BaseModel):
+    results: StudyResultsSchema
+    responses: list[StudyResponseSchema]
+    demographics: Optional[SurveyAnswerSchema] = None
+
+class ConfigDeleteRequest(BaseModel):
+    study_code:Annotated[str,StringConstraints(max_length=6)]
+
+class ResultDeleteRequest(BaseModel):
+    result_id:UUID
