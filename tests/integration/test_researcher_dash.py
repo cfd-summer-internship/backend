@@ -1,9 +1,10 @@
 import sys
+import uuid
 
 from httpx import ASGITransport, AsyncClient
 import pytest
 import pytest_asyncio
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from db.client import get_db_session
 from models.conclusion_config_model import ConclusionConfiguration
@@ -176,3 +177,18 @@ async def test_include_config_id(session):
     rows = res.scalars()
     for row in rows:
         assert row.config_id
+
+@pytest.mark.asyncio
+async def test_delete_config(session):
+    config_id = "b2406128-5981-4aae-a70d-b865ba8311d9"
+    stmt = delete(StudyConfiguration).where(StudyConfiguration.id == config_id).returning(StudyConfiguration.id)
+    res = await session.execute(stmt)
+    deleted_id = res.scalar_one()
+    assert deleted_id == uuid.UUID(config_id)
+    await session.commit()
+
+    stmt = select(StudyConfiguration).where(StudyConfiguration.id == config_id)
+    res = await session.execute(stmt)
+    row = res.scalar_one_or_none()
+    assert row is None
+    

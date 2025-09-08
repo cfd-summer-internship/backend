@@ -1,7 +1,6 @@
-from typing import List, Dict
 from uuid import UUID
 from fastapi import HTTPException
-from sqlalchemy import select, func
+from sqlalchemy import delete, exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.conclusion_config_model import ConclusionConfiguration
@@ -202,3 +201,27 @@ async def get_all_study_responses(
     for row in rows:
         export_data.append(await get_study_response_by_id(row.id, researcher_id, conn))
     return export_data
+
+
+async def delete_study_config(config_id: UUID, researcher: UUID, conn: AsyncSession):
+    try:
+        _validate = exists().where(
+            Study.id == StudyConfiguration.study_id,
+            Study.researcher == researcher
+        )
+        stmt = (
+            delete(StudyConfiguration)
+            .where(StudyConfiguration.id == config_id,
+                _validate)
+        )
+        await conn.execute(stmt)
+        await conn.commit()
+    except Exception as e:
+        raise HTTPException(500, detail=str(e))
+
+
+    stmt = select(StudyConfiguration).where(StudyConfiguration.id == config_id)
+    res = await conn.execute(stmt)
+    row = res.scalar_one_or_none()
+    if row is not None:
+            raise HTTPException(500, detail="Error Deleting Config")

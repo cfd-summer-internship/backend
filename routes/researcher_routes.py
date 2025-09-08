@@ -1,5 +1,5 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 import io
@@ -10,6 +10,7 @@ from models.user_model import User
 from models.enums import UserRole
 from auth.user_manager import require_role
 from services.researcher_dashboard_service import (
+    delete_study_config,
     get_all_study_responses,
     get_study_response_by_id,
     get_study_codes,
@@ -59,6 +60,13 @@ async def get_all(
 ) -> list[StudyResultsSchema]:
     return await get_all_study_results(user.id, conn)
 
+@router.delete("/delete/{config_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_config(
+    config_id:UUID,
+    user: User = Depends(require_role(UserRole.RESEARCHER)),
+    conn: AsyncSession = Depends(get_db_session)
+):
+    return await delete_study_config(config_id, user.id, conn)
 
 @router.get("/export/{study_results_id}", response_model=ResultsExportSchema)
 async def export_study_results_by_id(
