@@ -19,7 +19,7 @@ async def client(app):
 async def test_add_study_results(client):
         payload={
             "identity":{
-                "config_id":"b2406128-5981-4aae-a70d-b865ba8311d9",
+                "config_id":"507e3ff7-812c-40c4-8565-6823a4359dc6",
                 "subject_id":str(uuid.uuid4()),
             },
             "responses":[

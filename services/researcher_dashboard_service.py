@@ -232,3 +232,26 @@ async def delete_study_config(config_id: UUID, researcher: UUID, conn: AsyncSess
     row = res.scalar_one_or_none()
     if row is not None:
             raise HTTPException(500, detail="Error Deleting Config")
+
+async def delete_study_result(result_id: UUID, researcher: UUID, conn: AsyncSession):
+    try:
+        _validate = exists().where(
+            Study.id == StudyResults.study_id,
+            Study.researcher == researcher
+        )
+        stmt = (
+            delete(StudyResults)
+            .where(StudyResults.id == result_id,
+                _validate)
+        )
+        await conn.execute(stmt)
+        await conn.commit()
+    except Exception as e:
+        raise HTTPException(500, detail=str(e))
+
+
+    stmt = select(StudyConfiguration).where(StudyConfiguration.id == result_id)
+    res = await conn.execute(stmt)
+    row = res.scalar_one_or_none()
+    if row is not None:
+            raise HTTPException(500, detail="Error Deleting Results")

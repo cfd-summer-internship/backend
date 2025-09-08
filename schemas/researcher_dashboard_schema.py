@@ -59,3 +59,6 @@ class ResultsExportSchema(BaseModel):
 
 class ConfigDeleteRequest(BaseModel):
     study_code:Annotated[str,StringConstraints(max_length=6)]
+
+class ResultDeleteRequest(BaseModel):
+    result_id:UUID
