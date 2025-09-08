@@ -196,7 +196,6 @@ async def get_config_file(
             response_method=study.experiment.response_method,
         ),
         conclusion=ConclusionPhase(
-            show_results=study.conclusion.show_results,
             has_survey=study.conclusion.has_survey
         )
     )

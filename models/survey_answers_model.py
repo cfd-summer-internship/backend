@@ -18,6 +18,6 @@ class SurveyAnswer(Base):
 
     subject_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False, unique=True)
 
-    age: Mapped[str] = mapped_column(Integer, nullable=False)
+    age: Mapped[int] = mapped_column(Integer, nullable=False)
     sex: Mapped[str] = mapped_column(String, nullable=False)
     race: Mapped[str] = mapped_column(String, nullable=False)

@@ -21,11 +21,6 @@ class ConclusionConfiguration(Base):
         unique=True
     )
 
-    show_results: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False
-    )
-
     has_survey: Mapped[bool] = mapped_column(
         Boolean,
         nullable=True

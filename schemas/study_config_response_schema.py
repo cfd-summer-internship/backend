@@ -8,8 +8,10 @@ from models.enums import DisplayMethodEnum, ResponseMethodEnum
 class MessageResponse(BaseModel):
     message: str
 
+
 class StudyCodeReponse(BaseModel):
-    study_code:str
+    study_code: str
+
 
 class LearningPhase(BaseModel):
     display_duration: int
@@ -30,16 +32,8 @@ class ExperimentPhase(LearningPhase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class SurveyQuestions(BaseModel):
-    questions: list[str]
-    model_config = ConfigDict(from_attributes=True)
-
-
 class ConclusionPhase(BaseModel):
-    show_results: bool
     has_survey: bool
-    questions: Optional[list[str]] = None
-
     model_config = ConfigDict(from_attributes=True)
 
 

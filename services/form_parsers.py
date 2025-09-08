@@ -41,14 +41,10 @@ def get_experiment_phase(
 
 
 def get_conclusion_phase(
-        showResults: bool = Form(..., alias="conclusion.showResults"),
         survey: bool = Form(..., alias="conclusion.survey"),
-        surveyQuestions: Optional[list[str]] = Form(None, alias="survey.questions")
 ):
     return ConclusionPhaseRequest(
-        show_results=showResults,
-        has_survey=survey,
-        questions=surveyQuestions
+        has_survey=survey
     )
 
 
