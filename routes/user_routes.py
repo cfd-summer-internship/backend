@@ -7,6 +7,16 @@ from models.user_model import User
 
 router = APIRouter(prefix="/user", tags=["user"])
 
+@router.get("/role")
+async def get_highest_role(user:User= Depends(current_active_user)):
+    roles = [role for role in user.role]
+    if UserRole.ADMIN in roles:
+        return UserRole.ADMIN
+    elif UserRole.STAFF in roles:
+        return UserRole.STAFF
+    else:
+        return UserRole.RESEARCHER
+
 @router.get("/authenticated_route")
 async def authenticated_route(user: User = Depends(current_active_user)):
     return {"message": f"Hello {user.email}!"}
