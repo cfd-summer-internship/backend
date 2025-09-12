@@ -28,12 +28,7 @@ class ExperimentPhaseRequest(LearningPhaseRequest):
     response_method: ResponseMethodEnum
 
 
-class SurveyQuestionsRequest(BaseModel):
-    survey_questions: list[str]
-
-
 class ConclusionPhaseRequest(BaseModel):
-    show_results: bool
     has_survey: bool
 
 

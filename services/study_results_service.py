@@ -12,6 +12,7 @@ async def add_study_result(config_id: UUID, subject_id: UUID, conn: AsyncSession
     '''Creates a corresponding Study Result for each submission.
     Only commited if Study Responses are successfully inserted.'''
     try:
+        print(f"{subject_id} results are being added")
         study_id = await get_study_id_from_config(config_id=config_id, conn=conn)
         study_result = StudyResults(
             id=uuid4(),

@@ -106,7 +106,6 @@ async def save_conclusion_phase(
     conn.add(
         ConclusionConfiguration(
             study_config_id=study_id,
-            show_results=data.show_results,
             has_survey=data.has_survey,
         )
     )
