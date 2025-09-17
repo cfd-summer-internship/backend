@@ -1,8 +1,15 @@
+from datetime import datetime, timezone
+import json
+from pathlib import Path
+import re
 from typing import Optional
+from uuid import uuid4
 from botocore.client import BaseClient
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
 from fastapi.params import Query
-from schemas.r2_schemas import DeleteFileRequest, FileInfoList, PaginateResponse
+from auth.user_manager import require_role
+from models.enums import UserRole
+from schemas.r2_schemas import AbortReq, CommitReq, CommitRes, CompleteReq, CompleteRes, CreateReq, CreateRes, DeleteFileRequest, FileInfoList, PaginateResponse, SignPartReq, SignPartRes
 from services.r2_client import get_r2_client
 from services.r2_service import (
     delete_file_from_bucket,
@@ -14,8 +21,10 @@ from services.r2_service import (
 )
 from settings import Settings, get_settings
 
+
 # ROUTER
 router = APIRouter(prefix="/images", tags=["images"])
+PRESIGN_TTL = 15 * 60
 
 
 @router.get("/get_image")
@@ -72,3 +81,187 @@ async def get_file_page(
         next_token=next_token,
         max_keys=max_keys,
     )
+
+
+@router.post("/s3-multipart/create", response_model=CreateRes)
+async def create_mpu(
+    body: CreateReq,
+    user = Depends(require_role(UserRole.STAFF)),
+    client: BaseClient = Depends(get_r2_client),
+    settings: Settings = Depends(get_settings), # or remove if not multi-tenant
+):
+    session_id = body.sessionId or "default"
+    prefix = user_prefix(user.id, session_id)
+    key = make_object_key(prefix, body.name)
+
+    metadata = {"owner": str(user.id), "session": session_id}
+
+    if body.type and body.type.strip():
+        resp = client.create_multipart_upload(
+            Bucket=settings.r2_bucket_name,
+            Key=key,
+            ContentType=body.type,
+            Metadata=metadata,
+        )
+    else:
+        resp = client.create_multipart_upload(
+            Bucket=settings.r2_bucket_name,
+            Key=key,
+            Metadata=metadata,
+        )
+
+    return {"uploadId": resp["UploadId"], "key": key}
+
+
+
+def safe_filename(name: str) -> str:
+    base = Path(name).name
+    return re.sub(r"[^a-zA-Z0-9._-]+", "-", base)[:120] or "file"
+
+
+def user_prefix(user_id: str, session_id: str) -> str:
+    # Choose a shape that matches your needs; keep it consistent everywhere.
+    # Examples:
+    # - per-user:   staging/u/<user_id>/<session_id>/files/
+    # - per-tenant: staging/o/<org_id>/u/<user_id>/<session_id>/files/
+    base = f"staging/u/{user_id}"
+    return f"{base}/{session_id}/files/"
+
+def make_object_key(prefix: str, original_name: str) -> str:
+    return f"{prefix}{uuid4().hex}-{safe_filename(original_name)}"
+
+@router.post("/s3-multipart/sign-part", response_model=SignPartRes)
+async def sign_part(
+    body: SignPartReq,
+    user = Depends(require_role(UserRole.STAFF)),
+    client: BaseClient = Depends(get_r2_client),
+    settings: Settings = Depends(get_settings),
+):
+    # Recompute the allowed prefix from claims and derive the sessionId from the key.
+    # Minimal pattern: sessionId is the 4th segment after the user/org parts in your scheme.
+    # Adjust this parser to your exact key shape.
+    # Example parser (quick and dirty):
+    try:
+        session_id = body.key.split("/")[5]  # [...]/u/<uid>/<session>/files/<uuid>-name
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid key")
+
+    prefix = user_prefix(user.id, session_id)
+    try:
+        assert_key_under_prefix(body.key, prefix)
+    except ValueError:
+        raise HTTPException(status_code=403, detail="Key not owned by caller")
+
+    url = client.generate_presigned_url(
+        ClientMethod="upload_part",
+        Params={
+            "Bucket": settings.r2_bucket_name,
+            "Key": body.key,
+            "UploadId": body.uploadId,
+            "PartNumber": body.partNumber,
+        },
+        ExpiresIn=PRESIGN_TTL,
+        HttpMethod="PUT",
+    )
+    return {"url": url, "headers": {}}
+
+
+def assert_key_under_prefix(key: str, prefix: str):
+    if not key.startswith(prefix):
+        raise ValueError("Key outside allowed prefix")
+    
+@router.post("/api/s3-multipart/complete", response_model=CompleteRes)
+async def complete_mpu(
+    body: CompleteReq,
+    user = Depends(require_role(UserRole.STAFF)),
+    client: BaseClient = Depends(get_r2_client),
+    settings: Settings = Depends(get_settings),
+):
+    # Ownership check
+    try:
+        session_id = body.key.split("/")[5]
+        prefix = user_prefix(user.id, session_id)
+        assert_key_under_prefix(body.key, prefix)
+    except Exception:
+        raise HTTPException(status_code=403, detail="Key not owned by caller")
+
+    parts = [p.normalized() for p in body.parts]
+    resp = client.complete_multipart_upload(
+        Bucket=settings.r2_bucket_name,
+        Key=body.key,
+        UploadId=body.uploadId,
+        MultipartUpload={"Parts": parts},
+    )
+
+    # Optional safety: verify owner metadata still matches the caller
+    head = client.head_object(Bucket=settings.r2_bucket_name, Key=body.key)
+    if head.get("Metadata", {}).get("owner") != str(user.id):
+        # Roll back to be safe
+        client.delete_object(Bucket=settings.r2_bucket_name, Key=body.key)
+        raise HTTPException(status_code=403, detail="Ownership metadata mismatch")
+
+    # Optional sanity check with expectedSize (from your hook)
+    if body.expectedSize is not None and head["ContentLength"] != body.expectedSize:
+        client.delete_object(Bucket=settings.r2_bucket_name, Key=body.key)
+        raise HTTPException(status_code=409, detail="Size mismatch after complete")
+
+    location = resp.get("Location") or f"s3://{settings.r2_bucket_name}/{body.key}"
+    return {"location": location, "key": body.key, "etag": resp.get("ETag")}
+
+@router.delete("/api/s3-multipart/abort", status_code=204)
+async def abort_mpu(
+    body: AbortReq,
+    user = Depends(require_role(UserRole.STAFF)),
+    client: BaseClient = Depends(get_r2_client),
+    settings: Settings = Depends(get_settings),
+):
+    # Same ownership check pattern as above
+    try:
+        session_id = body.key.split("/")[5]
+        prefix = user_prefix(user.id, session_id)
+        assert_key_under_prefix(body.key, prefix)
+    except Exception:
+        raise HTTPException(status_code=403, detail="Key not owned by caller")
+
+    client.abort_multipart_upload(Bucket=settings.r2_bucket_name, Key=body.key, UploadId=body.uploadId)
+    return Response(status_code=204)
+
+@router.post("/api/archives/{sessionId}/commit", response_model=CommitRes)
+async def commit_archive(
+    sessionId: str,
+    body: CommitReq,
+    user = Depends(require_role(UserRole.STAFF)),
+    client: BaseClient = Depends(get_r2_client),
+    settings: Settings = Depends(get_settings),
+):
+    prefix = user_prefix(user.id, sessionId)
+
+    # Verify every key is under the caller’s prefix and actually owned (via metadata)
+    for item in body.items:
+        if not item.key.startswith(prefix):
+            raise HTTPException(status_code=403, detail=f"Key outside session prefix: {item.key}")
+        head = client.head_object(Bucket=settings.r2_bucket_name, Key=item.key)
+        if head["ContentLength"] != item.size:
+            raise HTTPException(status_code=409, detail=f"Size mismatch for {item.key}")
+        if head.get("Metadata", {}).get("owner") != str(user.id):
+            raise HTTPException(status_code=403, detail=f"Not owner of {item.key}")
+
+    # Write manifest under the *same* scoped area
+    manifest_key = prefix.replace("/files/", "/") + "manifest.json"
+    client.put_object(
+        Bucket=settings.r2_bucket_name,
+        Key=manifest_key,
+        Body=json.dumps({
+            "userId": str(user.id),
+            "sessionId": sessionId,
+            "items": [i.model_dump() for i in body.items],
+            "version": 1,
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+        }, separators=(",", ":")).encode(),
+        ContentType="application/json",
+    )
+
+    # Optional: copy to final/ with same scoping
+    # ...
+
+    return {"ok": True, "manifestKey": manifest_key}
