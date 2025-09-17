@@ -92,9 +92,12 @@ async def create_mpu(
 ):
     session_id = body.sessionId or "default"
     prefix = user_prefix(user.id, session_id)
-    key = make_object_key(prefix, body.name)
 
-    metadata = {"owner": str(user.id), "session": session_id}
+    #Add sanitized filename to metadata
+    safe_name = safe_filename(body.name)
+    metadata = {"owner": str(user.id), "session": session_id, "basename": safe_name}
+
+    key = make_object_key(prefix, safe_name)
 
     if body.type and body.type.strip():
         resp = client.create_multipart_upload(
@@ -142,7 +145,7 @@ async def sign_part(
     # Adjust this parser to your exact key shape.
     # Example parser (quick and dirty):
     try:
-        session_id = body.key.split("/")[5]  # [...]/u/<uid>/<session>/files/<uuid>-name
+        session_id = body.key.split("/")[3]  # [...]/u/<uid>/<session>/files/<uuid>-name
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid key")
 
@@ -170,7 +173,7 @@ def assert_key_under_prefix(key: str, prefix: str):
     if not key.startswith(prefix):
         raise ValueError("Key outside allowed prefix")
     
-@router.post("/api/s3-multipart/complete", response_model=CompleteRes)
+@router.post("/s3-multipart/complete", response_model=CompleteRes)
 async def complete_mpu(
     body: CompleteReq,
     user = Depends(require_role(UserRole.STAFF)),
@@ -179,7 +182,7 @@ async def complete_mpu(
 ):
     # Ownership check
     try:
-        session_id = body.key.split("/")[5]
+        session_id = body.key.split("/")[3]
         prefix = user_prefix(user.id, session_id)
         assert_key_under_prefix(body.key, prefix)
     except Exception:
@@ -204,11 +207,37 @@ async def complete_mpu(
     if body.expectedSize is not None and head["ContentLength"] != body.expectedSize:
         client.delete_object(Bucket=settings.r2_bucket_name, Key=body.key)
         raise HTTPException(status_code=409, detail="Size mismatch after complete")
+    
 
-    location = resp.get("Location") or f"s3://{settings.r2_bucket_name}/{body.key}"
-    return {"location": location, "key": body.key, "etag": resp.get("ETag")}
+    #Overwrite and flatten
+    final_key = final_name_from_meta(head, body.key)
 
-@router.delete("/api/s3-multipart/abort", status_code=204)
+    # location = resp.get("Location") or f"s3://{settings.r2_bucket_name}/{body.key}"
+    # return {"location": location, "key": body.key, "etag": resp.get("ETag")}
+    
+    client.copy_object(
+        Bucket=settings.r2_bucket_name,
+        CopySource={"Bucket": settings.r2_bucket_name, "Key": body.key},
+        Key=final_key,                               # <- filename only
+        Metadata=head.get("Metadata", {}),           # keep owner/session/basename
+        MetadataDirective="REPLACE",
+        ContentType=head.get("ContentType", "application/octet-stream"),
+    )
+    client.delete_object(Bucket=settings.r2_bucket_name, Key=body.key)
+
+    # Return final location + key to the client
+    location = f"s3://{settings.r2_bucket_name}/{final_key}"
+    return {"location": location, "key": final_key, "etag": resp.get("ETag")}
+
+def final_name_from_meta(head: dict, staging_key: str) -> str:
+    meta = head.get("Metadata", {})
+    if meta.get("basename"):
+        return meta["basename"]
+    # Fallback: drop leading "<32hex>-"
+    last = staging_key.rsplit("/", 1)[-1]
+    return re.sub(r"^[0-9a-f]{32}-", "", last)
+
+@router.delete("/s3-multipart/abort", status_code=204)
 async def abort_mpu(
     body: AbortReq,
     user = Depends(require_role(UserRole.STAFF)),
@@ -217,7 +246,7 @@ async def abort_mpu(
 ):
     # Same ownership check pattern as above
     try:
-        session_id = body.key.split("/")[5]
+        session_id = body.key.split("/")[3]
         prefix = user_prefix(user.id, session_id)
         assert_key_under_prefix(body.key, prefix)
     except Exception:
@@ -226,7 +255,7 @@ async def abort_mpu(
     client.abort_multipart_upload(Bucket=settings.r2_bucket_name, Key=body.key, UploadId=body.uploadId)
     return Response(status_code=204)
 
-@router.post("/api/archives/{sessionId}/commit", response_model=CommitRes)
+@router.post("/archives/{sessionId}/commit", response_model=CommitRes)
 async def commit_archive(
     sessionId: str,
     body: CommitReq,
