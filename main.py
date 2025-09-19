@@ -7,6 +7,7 @@ from routes.survey_answer_routes import router as SurveyAnswerRouter
 from routes.auth_routes import auth_router as AuthRouter
 from routes.user_routes import router as UserRouter
 from routes.researcher_routes import router as ResearcherRouter
+from routes.staff_routes import router as StaffRouter
 import uvicorn as uv
 from fastapi.middleware.cors import CORSMiddleware
 import models.all_models # noqa
@@ -36,6 +37,7 @@ app.include_router(ConfigRouter)
 app.include_router(RetrievalRouter)
 app.include_router(R2Router)
 app.include_router(ResearcherRouter)
+app.include_router(StaffRouter)
 app.include_router(StudyResultsRouter)
 app.include_router(SurveyAnswerRouter)
 
