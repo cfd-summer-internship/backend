@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from auth.user_manager import require_role
 from db.client import get_db_session
@@ -18,8 +18,10 @@ async def get_researcher_by_email(
     user: User = Depends(require_role(UserRole.STAFF)),
     conn: AsyncSession = Depends(get_db_session),
 ):
-    return await get_researcher_id(payload.email, conn)
-
+    researcher_id = await get_researcher_id(payload.email, conn)
+    if not researcher_id:
+        raise HTTPException(500, detail="Unable to find User")
+    return researcher_id
 
 @router.post("/search/configs")
 async def get_researcher_configs(
@@ -28,6 +30,8 @@ async def get_researcher_configs(
     conn: AsyncSession = Depends(get_db_session),
 ):
     researcher_id = await get_researcher_id(payload.email, conn)
+    if not researcher_id:
+        raise HTTPException(500, detail="Unable to find User")
     study_codes = await get_study_codes(conn, researcher_id)
     return {"study_codes": study_codes}
 
@@ -39,4 +43,6 @@ async def get_researcher_results(
     conn: AsyncSession = Depends(get_db_session),
 ) -> list[StudyResultsSchema]:
     researcher_id = await get_researcher_id(payload.email, conn)
+    if not researcher_id:
+        raise HTTPException(500, detail="Unable to find User")
     return await get_all_study_results(researcher_id, conn)

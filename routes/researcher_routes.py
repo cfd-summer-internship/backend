@@ -14,7 +14,6 @@ from services.researcher_dashboard_service import (
     delete_study_result,
     get_all_study_responses,
     get_config_id,
-    get_researcher_id,
     get_study_response_by_id,
     get_study_codes,
     get_study_results_subject_id,
