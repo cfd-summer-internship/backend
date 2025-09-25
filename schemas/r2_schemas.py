@@ -42,11 +42,10 @@ class SignPartRes(BaseModel):
 
 
 def ensure_quoted_etag(etag: str) -> str:
-    return etag if etag.startswith('"') and etag.endswith('"') else f'"{etag.strip("\"")}"'
+    return etag if etag.startswith('"') and etag.endswith('"') else '"' + etag.strip('"') + '"'
 
 
 class AwsS3Part(BaseModel):
-    # Uppy will send either `ETag`/`PartNumber` or lowercased; accept both.
     ETag: Optional[str] = None
     PartNumber: Optional[int] = None
     etag: Optional[str] = None
@@ -54,7 +53,7 @@ class AwsS3Part(BaseModel):
 
     def normalized(self):
         return {
-            "ETag": ensure_quoted_etag(self.ETag or self.etag),  # must be quoted for S3 Complete
+            "ETag": ensure_quoted_etag(self.ETag or self.etag),
             "PartNumber": int(self.PartNumber or self.partNumber),
         }
 
@@ -78,7 +77,7 @@ class AbortReq(BaseModel):
 class ManifestItem(BaseModel):
     key: str
     size: int
-    sha256: Optional[str] = None  # optional if you compute hashes client-side
+    sha256: Optional[str] = None
 
 class CommitReq(BaseModel):
     items: List[ManifestItem]
