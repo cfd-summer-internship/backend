@@ -11,6 +11,7 @@ from models.conclusion_config_model import ConclusionConfiguration
 from models.study_config_model import StudyConfiguration
 from models.study_model import Study
 from models.study_result_model import StudyResults
+from models.user_model import User
 from settings import get_settings
 # sys hacks to get imports to work
 sys.path.append("./")
@@ -200,4 +201,12 @@ async def test_get_id(session):
     configs = res.scalars()
     config_id = [str(config) for config in configs if str(config)[-6:] == studyCode]
     assert config_id[0] == "8d68f623-84f4-44a5-822d-b0067d6a3335"
+
+@pytest.mark.asyncio
+async def test_get_id_from_email(session,settings):
+    search =settings.dev_email
+    stmt = select(User.id).where(User.email==search)
+    res = await session.execute(stmt)
+    user_id = res.scalar_one_or_none()
+    assert user_id == uuid.UUID("e24cefef-8625-466d-ab84-948848c2e1c8")
     

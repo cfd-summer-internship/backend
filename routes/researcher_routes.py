@@ -64,22 +64,25 @@ async def get_all(
 ) -> list[StudyResultsSchema]:
     return await get_all_study_results(user.id, conn)
 
+
 @router.delete("/delete/config", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_config(
     payload: ConfigDeleteRequest,
     user: User = Depends(require_role(UserRole.RESEARCHER)),
-    conn: AsyncSession = Depends(get_db_session)
+    conn: AsyncSession = Depends(get_db_session),
 ):
     config_id = await get_config_id(user.id, payload.study_code, conn)
     return await delete_study_config(config_id, user.id, conn)
+
 
 @router.delete("/delete/result", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_result(
     payload: ResultDeleteRequest,
     user: User = Depends(require_role(UserRole.RESEARCHER)),
-    conn: AsyncSession = Depends(get_db_session)
+    conn: AsyncSession = Depends(get_db_session),
 ):
     return await delete_study_result(payload.result_id, user.id, conn)
+
 
 @router.get("/export/{study_results_id}", response_model=ResultsExportSchema)
 async def export_study_results_by_id(

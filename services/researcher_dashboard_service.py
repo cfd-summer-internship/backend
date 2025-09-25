@@ -9,6 +9,7 @@ from models.study_result_model import StudyResults
 from models.study_response_model import StudyResponse
 from models.study_config_model import StudyConfiguration
 from models.survey_answers_model import SurveyAnswer
+from models.user_model import User
 from schemas.researcher_dashboard_schema import (
     ResultsExportSchema,
     StudyResponseSchema,
@@ -255,3 +256,9 @@ async def delete_study_result(result_id: UUID, researcher: UUID, conn: AsyncSess
     row = res.scalar_one_or_none()
     if row is not None:
             raise HTTPException(500, detail="Error Deleting Results")
+    
+async def get_researcher_id(email: str, conn: AsyncSession):
+    stmt = select(User.id).where(User.email==email)
+    res = await conn.execute(stmt)
+    user_id = res.scalar_one_or_none()
+    return user_id
