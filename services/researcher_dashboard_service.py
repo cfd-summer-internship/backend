@@ -10,6 +10,7 @@ from models.study_response_model import StudyResponse
 from models.study_config_model import StudyConfiguration
 from models.survey_answers_model import SurveyAnswer
 from models.user_model import User
+from schemas.const import TAIL_LEN
 from schemas.researcher_dashboard_schema import (
     ResultsExportSchema,
     StudyResponseSchema,
@@ -21,7 +22,7 @@ async def get_config_id(researcher:UUID, studyCode:str, conn:AsyncSession) -> UU
     stmt = select(StudyConfiguration.id).join(Study).where(Study.researcher == researcher)
     res = await conn.execute(stmt)
     configs = res.scalars()
-    config_id = [str(config) for config in configs if str(config)[-6:] == studyCode]
+    config_id = [str(config) for config in configs if str(config)[-TAIL_LEN:] == studyCode]
     return config_id[0]
 
 
@@ -33,7 +34,7 @@ async def get_study_codes(conn: AsyncSession, researcher_id: UUID) -> list[str]:
     )
     res = await conn.execute(stmt)
     rows = res.scalars()
-    study_codes = [str(config_id)[-6:] for config_id in rows]
+    study_codes = [str(config_id)[-TAIL_LEN:] for config_id in rows]
     return study_codes
 
 

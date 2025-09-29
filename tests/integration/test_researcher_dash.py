@@ -12,6 +12,7 @@ from models.study_config_model import StudyConfiguration
 from models.study_model import Study
 from models.study_result_model import StudyResults
 from models.user_model import User
+from schemas.const import TAIL_LEN
 from settings import get_settings
 # sys hacks to get imports to work
 sys.path.append("./")
@@ -199,7 +200,7 @@ async def test_get_id(session):
     stmt = select(StudyConfiguration.id)
     res = await session.execute(stmt)
     configs = res.scalars()
-    config_id = [str(config) for config in configs if str(config)[-6:] == studyCode]
+    config_id = [str(config) for config in configs if str(config)[-TAIL_LEN:] == studyCode]
     assert config_id[0] == "8d68f623-84f4-44a5-822d-b0067d6a3335"
 
 @pytest.mark.asyncio

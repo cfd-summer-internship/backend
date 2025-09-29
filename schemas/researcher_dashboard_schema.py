@@ -2,6 +2,7 @@ from pydantic import BaseModel, StringConstraints
 from uuid import UUID
 from datetime import datetime
 from typing import Annotated, Optional, List, Dict
+from schemas.const import TAIL_LEN
 
 class StudyListItem(BaseModel):
     id: UUID
@@ -58,7 +59,7 @@ class ResultsExportSchema(BaseModel):
     demographics: Optional[SurveyAnswerSchema] = None
 
 class ConfigDeleteRequest(BaseModel):
-    study_code:Annotated[str,StringConstraints(max_length=6)]
+    study_code:Annotated[str,StringConstraints(max_length=TAIL_LEN)]
 
 class ResultDeleteRequest(BaseModel):
     result_id:UUID

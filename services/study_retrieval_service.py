@@ -14,6 +14,7 @@ from models.study_config_model import StudyConfiguration
 from models.uploaded_files_model import UploadedFiles
 from models.user_survey_config_model import UserSurveyConfig
 from models.enums import ImageListColumn
+from schemas.const import TAIL_LEN
 from schemas.study_config_response_schema import StudyConfigResponse
 from schemas.study_config_response_schema import (
     FileUploads,
@@ -40,13 +41,13 @@ async def get_study_id_list(conn: AsyncSession) -> list[uuid.UUID]:
 
 
 async def get_study_id(study_code: str, conn: AsyncSession) -> uuid.UUID:
-    """Returns the first matching Study ID from a submitted 6-digit study code"""
+    """Returns the first matching Study ID from a submitted study code"""
     try:
         stmt = select(StudyConfiguration).execution_options(populate_existing=True)
         result = await conn.execute(stmt)
         rows = result.scalars().all()
         for study in rows:
-            if study.id.hex[-6:] == study_code:
+            if study.id.hex[-TAIL_LEN:] == study_code:
                 return study.id
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
