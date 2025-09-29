@@ -6,3 +6,4 @@ class SurveyAnswerResponse(BaseModel):
     age: int
     sex: str
     race: str
+    

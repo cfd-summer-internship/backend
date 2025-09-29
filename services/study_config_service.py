@@ -1,6 +1,7 @@
 import uuid
 import csv
 from fastapi import HTTPException, UploadFile
+from sqlalchemy import select
 
 from models.conclusion_config_model import ConclusionConfiguration
 from models.study_config_model import StudyConfiguration
@@ -35,6 +36,10 @@ async def add_study(config: StudyConfigRequest, conn: AsyncSession):
     try:
         study_id = uuid.uuid4()
         config_id = uuid.uuid4()
+
+        while not await validate_study_code(str(config_id)[-6:], conn):
+            config_id = uuid.uuid4()
+
         study = Study(id=study_id, researcher=config.researcher)
         conn.add(study)
 
@@ -60,6 +65,16 @@ async def add_study(config: StudyConfigRequest, conn: AsyncSession):
         await conn.rollback()
         print("Insertion Error: ",str(e))
         raise HTTPException(500, detail=str(e))
+    
+async def validate_study_code(study_code:str, conn:AsyncSession) -> bool:
+    sel = select(StudyConfiguration.id)
+    res = await conn.execute(sel)
+    rows = res.scalars().all()
+    for row in rows:
+        code = str(row)[-6:]
+        if code == study_code:
+            return False
+    return True
 
 
 # HELPER FUNCTIONS FOR DATABASE INSERTION
