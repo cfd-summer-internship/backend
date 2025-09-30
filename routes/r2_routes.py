@@ -24,7 +24,7 @@ from schemas.r2_schemas import (
     SignPartReq,
     SignPartRes,
 )
-from services.r2_client import get_r2_client
+from services.r2_client import get_r2_read_client, get_r2_rw_client
 from services.r2_service import (
     delete_file_from_bucket,
     generate_image_url,
@@ -43,25 +43,9 @@ PRESIGN_TTL = 15 * 60
 async def get_image_url(
     filename: str,
     settings: Settings = Depends(get_settings),
-    client: BaseClient = Depends(get_r2_client),
+    client: BaseClient = Depends(get_r2_read_client),
 ):
     return generate_image_url(client, settings.r2_bucket_name, filename)
-
-
-# @router.post("/upload")
-# async def upload_zip(
-#     prefix: str = "",
-#     file: UploadFile = File(...),
-#     settings: Settings = Depends(get_settings),
-#     client: BaseClient = Depends(get_r2_client),
-# ):
-#     file_type = file.content_type
-#     if file_type.startswith("image/"):
-#         return upload_file_to_bucket(client, settings.r2_bucket_name, file.filename, file)
-#     elif file_type in ("application/zip", "application/x-zip-compressed") or file.filename.lower().endswith(".zip"):
-#         return upload_zip_file(client, settings.r2_bucket_name, file, prefix)
-#     else:
-#         raise HTTPException(415,f"Unsupported Med Type: {file_type}")
 
 
 @router.delete("/delete_file")
@@ -69,7 +53,7 @@ async def delete_file(
     payload: DeleteFileRequest,
     user=Depends(require_role(UserRole.STAFF)),
     settings: Settings = Depends(get_settings),
-    client: BaseClient = Depends(get_r2_client),
+    client: BaseClient = Depends(get_r2_rw_client),
 ):
     return delete_file_from_bucket(client, settings.r2_bucket_name, payload.filename)
 
@@ -78,7 +62,7 @@ async def delete_file(
 async def get_all_file_info(
     user=Depends(require_role(UserRole.STAFF)),
     settings: Settings = Depends(get_settings),
-    client: BaseClient = Depends(get_r2_client),
+    client: BaseClient = Depends(get_r2_read_client),
 ) -> FileInfoList:
     return get_all_files_from_bucket(client, settings.r2_bucket_name)
 
@@ -89,7 +73,7 @@ async def get_file_page(
     max_keys: Optional[int] = Query(25, ge=1, le=1000),
     next_token: Optional[str] = Query(None),
     settings: Settings = Depends(get_settings),
-    client: BaseClient = Depends(get_r2_client),
+    client: BaseClient = Depends(get_r2_read_client),
 ) -> PaginateResponse:
     return get_file_info_page(
         client=client,
@@ -103,7 +87,7 @@ async def get_file_page(
 async def create_mpu(
     body: CreateReq,
     user=Depends(require_role(UserRole.STAFF)),
-    client: BaseClient = Depends(get_r2_client),
+    client: BaseClient = Depends(get_r2_rw_client),
     settings: Settings = Depends(get_settings),  # or remove if not multi-tenant
 ):
     session_id = body.sessionId or "default"
@@ -154,7 +138,7 @@ def make_object_key(prefix: str, original_name: str) -> str:
 async def sign_part(
     body: SignPartReq,
     user=Depends(require_role(UserRole.STAFF)),
-    client: BaseClient = Depends(get_r2_client),
+    client: BaseClient = Depends(get_r2_rw_client),
     settings: Settings = Depends(get_settings),
 ):
     # Recompute the allowed prefix from claims and derive the sessionId from the key.
@@ -195,7 +179,7 @@ def assert_key_under_prefix(key: str, prefix: str):
 async def complete_mpu(
     body: CompleteReq,
     user=Depends(require_role(UserRole.STAFF)),
-    client: BaseClient = Depends(get_r2_client),
+    client: BaseClient = Depends(get_r2_rw_client),
     settings: Settings = Depends(get_settings),
 ):
     # Ownership check
@@ -260,7 +244,7 @@ def final_name_from_meta(head: dict, staging_key: str) -> str:
 async def abort_mpu(
     body: AbortReq,
     user=Depends(require_role(UserRole.STAFF)),
-    client: BaseClient = Depends(get_r2_client),
+    client: BaseClient = Depends(get_r2_rw_client),
     settings: Settings = Depends(get_settings),
 ):
     # Same ownership check pattern as above
@@ -282,7 +266,7 @@ async def commit_archive(
     sessionId: str,
     body: CommitReq,
     user=Depends(require_role(UserRole.STAFF)),
-    client: BaseClient = Depends(get_r2_client),
+    client: BaseClient = Depends(get_r2_rw_client),
     settings: Settings = Depends(get_settings),
 ):
     prefix = user_prefix(user.id, sessionId)
@@ -327,7 +311,7 @@ async def commit_archive(
 async def abort_all_staging_mpus(
     prefix: str = Query("staging/", description="Must start with 'staging/'"),
     user=Depends(require_role(UserRole.ADMIN)),  # tighten to ADMIN for safety
-    client: BaseClient = Depends(get_r2_client),
+    client: BaseClient = Depends(get_r2_rw_client),
     settings: Settings = Depends(get_settings),
 ):
     if not prefix.startswith("staging/"):
@@ -384,7 +368,7 @@ async def abort_all_staging_mpus(
 @router.delete("/admin/r2/clear_bucket")
 def delete_all_objects(
     user=Depends(require_role(UserRole.ADMIN)),
-    client: BaseClient = Depends(get_r2_client),
+    client: BaseClient = Depends(get_r2_rw_client),
     settings: Settings = Depends(get_settings),
 ):
     bucket = settings.r2_bucket_name

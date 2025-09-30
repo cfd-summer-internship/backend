@@ -5,7 +5,7 @@ from fastapi.responses import StreamingResponse
 from db.client import get_db_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.uploaded_files_model import UploadedFiles
-from services.r2_client import get_r2_client
+from services.r2_client import get_r2_read_client
 from settings import Settings, get_settings
 from botocore.client import BaseClient
 from schemas.study_config_response_schema import StudyConfigResponse
@@ -97,7 +97,7 @@ async def export_config_file(
 async def get_learning_phase(
     study_id: uuid.UUID,
     conn: AsyncSession = Depends(get_db_session),
-    client: BaseClient = Depends(get_r2_client),
+    client: BaseClient = Depends(get_r2_read_client),
     settings: Settings = Depends(get_settings)
 ):
     """Returns the Learning Phase configuration for the study."""
@@ -117,7 +117,7 @@ async def get_waiting_phase(
 async def get_experiment_phase(
     study_id: uuid.UUID,
     conn: AsyncSession = Depends(get_db_session),
-    client: BaseClient = Depends(get_r2_client),
+    client: BaseClient = Depends(get_r2_read_client),
     settings: Settings = Depends(get_settings)
 ):
     """ Returns the Experiment Phase configuration along with presigned URLs for experiment images. """
