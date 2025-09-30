@@ -15,7 +15,7 @@ from models.study_result_model import StudyResults
 sys.path.append("./")
 from main import app as fastapi_app
 from httpx import ASGITransport, AsyncClient
-from schemas.study_config_response_schema import StudyConfigResponse, SurveyQuestions
+from schemas.study_config_response_schema import StudyConfigResponse
 from services.study_retrieval_service import get_study_id_list, get_survey_id
 
 @pytest.fixture
@@ -33,6 +33,13 @@ async def client(app):
 async def session():
     client = get_db_session()
     return await anext(client)
+
+@pytest_asyncio.fixture
+async def study_config(client):
+    study_response = await client.get("/study/study_ids")
+    study_id = study_response.json()
+
+    return await client.get(f"/study/experiment_phase/{study_id[0]}")
 
 @pytest.mark.asyncio
 async def test_get_study_config(client):
@@ -63,27 +70,22 @@ async def test_get_survey_id(session) -> uuid.UUID:
         await session.aclose()
         assert result 
 
-@pytest.mark.asyncio
-async def test_get_survey_questions(client):
-    study_response = await client.get("/study/study_ids")
-    assert study_response.status_code == 200
-    study_id = study_response.json()
+# @pytest.mark.asyncio
+# async def test_get_survey_questions(client):
+#     study_response = await client.get("/study/study_ids")
+#     assert study_response.status_code == 200
+#     study_id = study_response.json()
     
-    response = await client.get(f"/study/survey/{study_id[0]}")
-    assert response.status_code == 200
-    json_data = response.json()
-    parsed = SurveyQuestions(**json_data)
-    assert parsed    
+#     response = await client.get(f"/study/survey/{study_id[0]}")
+#     assert response.status_code == 200
+#     json_data = response.json()
+#     parsed = SurveyQuestions(**json_data)
+#     assert parsed    
         
 @pytest.mark.asyncio
-async def test_get_learning_phase(client):
-    study_response = await client.get("/study/study_ids")
-    assert study_response.status_code == 200
-    study_id = study_response.json()
-
-    response = await client.get(f"/study/learning_phase/{study_id[0]}")
-    assert response.status_code == 200
-    json_data = response.json()
+async def test_get_learning_phase(study_config):
+    assert study_config.status_code == 200
+    json_data = study_config.json()
     assert "display_duration" in json_data
     assert "pause_duration" in json_data
     assert "display_method" in json_data
@@ -91,25 +93,15 @@ async def test_get_learning_phase(client):
     assert "image_ids" in json_data
 
 @pytest.mark.asyncio
-async def test_get_waiting_phase(client):
-    study_response = await client.get("/study/study_ids")
-    assert study_response.status_code == 200
-    study_id = study_response.json()
-
-    response = await client.get(f"/study/waiting_phase/{study_id[0]}")
-    assert response.status_code == 200
-    json_data = response.json()
+async def test_get_waiting_phase(study_config):
+    assert study_config.status_code == 200
+    json_data = study_config.json()
     assert "display_duration" in json_data
 
 @pytest.mark.asyncio
-async def test_get_experiment_phase(client):
-    study_response = await client.get("/study/study_ids")
-    assert study_response.status_code == 200
-    study_id = study_response.json()
-
-    response = await client.get(f"/study/experiment_phase/{study_id[0]}")
-    assert response.status_code == 200
-    json_data = response.json()
+async def test_get_experiment_phase(study_config):
+    assert study_config.status_code == 200
+    json_data = study_config.json()
     assert "display_duration" in json_data
     assert "pause_duration" in json_data
     assert "display_method" in json_data

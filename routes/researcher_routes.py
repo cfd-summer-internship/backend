@@ -9,6 +9,7 @@ from db.client import get_db_session
 from models.user_model import User
 from models.enums import UserRole
 from auth.user_manager import require_role
+from schemas.const import TAIL_LEN
 from services.researcher_dashboard_service import (
     delete_study_config,
     delete_study_result,
@@ -126,7 +127,7 @@ async def export_study_results_by_id(
         doc.writerow(row_data)
     buffer.seek(0)
     headers = {
-        "Content-Disposition": f"attachment; filename={str(export_data.results.study_id)[-6:]}-results.csv; filename*=UTF-8''{str(export_data.results.study_id)[-6:]}-results.csv"
+        "Content-Disposition": f"attachment; filename={str(export_data.results.study_id)[-TAIL_LEN:]}-results.csv; filename*=UTF-8''{str(export_data.results.study_id)[-TAIL_LEN:]}-results.csv"
     }
     return StreamingResponse(
         iter([buffer.getvalue()]), media_type="text/csv", headers=headers

@@ -49,8 +49,7 @@ async def test_save_study_config(client, auth_token):
             "experiment.displayMethod" : "random",
             "experiment.responseMethod" : "binary",
             "conclusion.showResults": "true",
-            "conclusion.survey":"true",
-            "survey.questions": ["testing", "testing2"],
+            "conclusion.survey":"true"
         },
         files={
             "configFiles.consentForm" : ("Consent Form", open("tests/assets/Test File.pdf", "rb"), "application/pdf"),

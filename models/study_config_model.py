@@ -1,12 +1,12 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Index, Text, cast, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import uuid
 from models.base_model import Base
 from typing import TYPE_CHECKING
+from schemas.const import TAIL_LEN
 
 from models.study_result_model import StudyResults
-
 
 if TYPE_CHECKING:
     from models.user_survey_config_model import UserSurveyConfig
@@ -69,12 +69,19 @@ class StudyConfiguration(Base):
         uselist=False
     )
 
-    # #STUDY PARENT -> STORES INFORMATION REGARDING THE STUDY
-    # study: Mapped["Study"] = relationship(
-    #     back_populates="config",
-    #     cascade="all, delete-orphan",
-    #     uselist=False
-    # )
-
     # REFERENCE TO STUDY RESULTS ONE-TO-MANY
     results: Mapped[list["StudyResults"]] = relationship()
+
+    #Constraint that avoids collisions on the UUID tail
+    #Used to verify no duplicate study codes
+    __table_args__ = (
+        Index(
+            f"uq_study_configuration_uuid_tail{TAIL_LEN}",
+            func.right(
+                func.replace(cast(id, Text), "-", ""),
+                TAIL_LEN,
+            ),
+            unique=True,
+            postgresql_using="btree",
+        ),
+    )

@@ -44,7 +44,7 @@ async def get_study_id_from_code(
     study_code: str,
     conn: AsyncSession = Depends(get_db_session),
 ) -> uuid.UUID:
-    """Return the full study UUID from a submitted 6-digit code."""
+    """Return the full study UUID from a submitted code."""
     return await get_study_id(study_code, conn=conn)
 
 
