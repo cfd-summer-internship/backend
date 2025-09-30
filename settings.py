@@ -14,9 +14,13 @@ class Settings(BaseSettings):
     model_string: str
     # R2
     r2_account_id: Optional[str] = None
-    r2_access_key_id: Optional[str] = None
-    r2_secret_access_key: Optional[str] = None
     r2_bucket_name: Optional[str] = None
+    #READ-ONLY
+    r2_read_access_key_id: Optional[str] = None
+    r2_read_secret_access_key: Optional[str] = None
+    #READ-WRITE
+    r2_rw_access_key_id: Optional[str] = None
+    r2_rw_secret_access_key: Optional[str] = None
     #AUTH
     auth:Optional[str] = None
     dev_email:Optional[str] = None
