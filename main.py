@@ -10,8 +10,8 @@ from routes.researcher_routes import router as ResearcherRouter
 from routes.staff_routes import router as StaffRouter
 import uvicorn as uv
 from fastapi.middleware.cors import CORSMiddleware
-import models.all_models
 from settings import get_settings
+import models.all_models  # noqa: F401
 
 settings = get_settings()
 
