@@ -16,9 +16,12 @@ import models.all_models  # noqa: F401
 # Initialize FastAPI App
 app = FastAPI(
     root_path="/api",
-    swagger_ui_parameters={
-        "docExpansion":"none"
-    }
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None
+    # swagger_ui_parameters={
+    #     "docExpansion":"none"
+    # }
 )
 
 app.router.redirect_slashes = False 
