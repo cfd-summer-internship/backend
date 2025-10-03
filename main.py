@@ -13,8 +13,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from settings import get_settings
 import models.all_models  # noqa: F401
 
-settings = get_settings()
-
 # Initialize FastAPI App
 app = FastAPI(
     root_path="/api",
@@ -24,6 +22,7 @@ app = FastAPI(
 )
 
 app.router.redirect_slashes = False 
+settings = get_settings()
 
 app.add_middleware(
     CORSMiddleware,
