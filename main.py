@@ -10,7 +10,8 @@ from routes.researcher_routes import router as ResearcherRouter
 from routes.staff_routes import router as StaffRouter
 import uvicorn as uv
 from fastapi.middleware.cors import CORSMiddleware
-import models.all_models # noqa
+from settings import get_settings
+import models.all_models  # noqa: F401
 
 # Initialize FastAPI App
 app = FastAPI(
@@ -21,10 +22,11 @@ app = FastAPI(
 )
 
 app.router.redirect_slashes = False 
+settings = get_settings()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://frontend:3000", "http://plixel.tail8d155b.ts.net:3000"],
+    allow_origins=[settings.cors_origin],
     allow_credentials=True,
     allow_methods=["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
     allow_headers=["Authorization","Content-Type"]

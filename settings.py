@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     auth:Optional[str] = None
     dev_email:Optional[str] = None
     dev_password:Optional[str] = None
+    #CORS
+    cors_origin: Optional[str] = None
 
     # Load ENV File
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
